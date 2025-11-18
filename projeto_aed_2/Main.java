@@ -16,7 +16,7 @@ import dataStructures.*;
 
 
 import java.util.Scanner;
-ujuju
+uju
 public class Main {
 
     //private static boolean hasBounds = false;
