@@ -13,12 +13,18 @@ import java.util.ArrayList;
 
 public class StudentCollectionClass implements StudentCollection, Serializable {
 
-    private final DoublyLinkedList<Student> students;
+    private final DoublyLinkedList<Student> students; //este é para desaparecer
+    private final SepChainHashTable<String, Student> studentsByName;
+    private final BSTSortedMap<String, Student> studentsSorted;
+    private final SepChainHashTable<String, Student> studentsByCountry;  //este não tinhamos no relatório, mas acho boa ideia
     private int studentsCounter;
     private final int DEFAULT_DIMENTION = 1;
 
     public StudentCollectionClass(){
         students = new DoublyLinkedList<>();
+        studentsByName = new SepChainHashTable<>();
+        studentsSorted = new BSTSortedMap<>();
+        studentsByCountry = new SepChainHashTable<>();
         studentsCounter = 0;
     }
 
@@ -28,8 +34,8 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
     }
 
     @Override
-    public boolean hasElem(String studentName) {
-        return searchStudentIndex(studentName) >= 0; // If searchServiceNameIndex() returns a number greater than 0 it means that found an elem
+    public boolean hasStudent(String studentName) {
+        return studentsByName.get(studentName) != null;
     }
 
     public int getSize() {
@@ -37,21 +43,24 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
     }
 
     @Override
-    public void addElem(Student elem) {
+    public void addStudent(String studentName, Student elem, String country) {
         students.addLast(elem);
+        studentsByName.put(studentName, elem);
+        studentsSorted.put(studentName, elem);
+        studentsByCountry.put(country, elem);
         studentsCounter++;
     }
 
     @Override
     public Student getElement(String studentName) {
-        int studentIndex = searchStudentIndex(studentName);
-        return students.get(studentIndex);
+        return studentsByName.get(studentName);
     }
 
     @Override
     public void removeElem(String studentName) {
-        int studentIndex = searchStudentIndex(studentName);
-        students.remove(studentIndex);
+        studentsByName.remove(studentName);
+        studentsSorted.remove(studentName);
+        studentsByCountry.remove(studentName); //isto não está bem. Temos que dar uma key, mas o nome dele está dentro do Objeto que é o value. Talvez seja um mapa dentro de um mapa
         studentsCounter--;
     }
 
@@ -151,11 +160,4 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
 //    }
 
 
-    private int searchStudentIndex(String studentName){
-        for(int i = 0; i < studentsCounter; i++){
-            if(studentName.equalsIgnoreCase(students.get(i).getName())) //antes tinha studentName.equals(students.get(students.indexOf(sttudents.get(i)).getName()))
-                return i;
-        }
-        return -1; // Devo deixar -1?
-    }
 }

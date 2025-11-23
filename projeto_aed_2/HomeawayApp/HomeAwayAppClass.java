@@ -126,7 +126,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
 
     @Override
     public boolean isValidStudentName(String studentName) {
-        return !studentCollection.hasElem(studentName);
+        return !studentCollection.hasStudent(studentName);
     }
 
     @Override
@@ -257,9 +257,9 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
 //todo add the student to a country
 
         switch (studentType) {
-            case OUTGOING -> studentCollection.addElem(new OutgoingStudent(studentName, lodgingService, country));
-            case THRIFTY -> studentCollection.addElem(new ThriftyStudentClass(studentName, lodgingService, country));
-            case BOOKISH -> studentCollection.addElem(new BookishStudent(studentName, lodgingService, country));
+            case OUTGOING -> studentCollection.addStudent(studentName,new OutgoingStudent(studentName, lodgingService, country), country);
+            case THRIFTY -> studentCollection.addStudent(studentName, new ThriftyStudentClass(studentName, lodgingService, country), country);
+            case BOOKISH -> studentCollection.addStudent(studentName, new BookishStudent(studentName, lodgingService, country), country);
         }
         studentCollection.getElement(studentName).changeCapacityOfTheLodging(studentCollection.getElement(studentName));
     }

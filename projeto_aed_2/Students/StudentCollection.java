@@ -24,7 +24,7 @@ public interface StudentCollection {
      * @return true if there is a shape with the provided identifier, false otherwise.
      * @pre ID != null
      */
-    boolean hasElem(String studentName);
+    boolean hasStudent(String studentName);
 
     int getSize();
     /**
@@ -33,7 +33,7 @@ public interface StudentCollection {
      * @param elem The shape to add.
      * @pre elem != null && this.hasElem(elem.getID())
      */
-    void addElem(Student elem);
+    void addStudent(String studentName, Student elem, String country);
 
     /**
      * Retrieves the shape with the provided identifier from the collection.
