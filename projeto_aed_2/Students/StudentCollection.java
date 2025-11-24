@@ -49,12 +49,12 @@ public interface StudentCollection {
      */
     void removeStudent(String studentName);
 
-    /**
-     * Returns an iterator over all shapes in the collection.
-     *
-     * @return An iterator over all shapes in the collection.
-     */
-    Iterator<Student> clientIterator();
+//    /**
+//     * Returns an iterator over all shapes in the collection.
+//     *
+//     * @return An iterator over all shapes in the collection.
+//     */
+//    Iterator<Student> clientIterator();
 
     Iterator<Student> allStudentIterator();
 

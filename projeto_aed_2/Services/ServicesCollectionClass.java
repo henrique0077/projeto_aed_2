@@ -5,6 +5,7 @@
 
 package Services;
 
+import Enumerators.*;
 import Students.Student;
 import Students.StudentCollection;
 import dataStructures.*;
@@ -18,18 +19,18 @@ import java.io.Serializable;
 
 public class ServicesCollectionClass implements ServicesCollection, Serializable {
 
-    private final List<Service> services;
-    private final List<Service> servicesEating;
-    private final List<Service> servicesLodging;
-    private final List<Service> servicesLeisure;
+    private final Map<String, Service> services;
+    private final Map<String, Service> servicesEating;
+    private final Map<String, Service> servicesLodging;
+    private final Map<String, Service> servicesLeisure;
     private int serviceCounter;
     private final int DEFAULT_DIMENTION = 1;
 
     public ServicesCollectionClass(){
-        services = new ListInArray<>(DEFAULT_DIMENTION);
-        servicesEating = new ListInArray<>(DEFAULT_DIMENTION);
-        servicesLodging = new ListInArray<>(DEFAULT_DIMENTION);
-        servicesLeisure = new ListInArray<>(DEFAULT_DIMENTION);
+        services = new SepChainHashTable<>(DEFAULT_DIMENTION);
+        servicesEating = new SepChainHashTable<>(DEFAULT_DIMENTION);
+        servicesLodging = new SepChainHashTable<>(DEFAULT_DIMENTION);
+        servicesLeisure = new SepChainHashTable<>(DEFAULT_DIMENTION);
         serviceCounter = 0;
     }
 
@@ -40,12 +41,12 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     @Override
     public boolean hasElem(String serviceName) {
-        return searchServiceNameIndex(serviceName) >= 0; // If searchServiceNameIndex() returns a number greater than 0 it means that found an elem
+        return services.get(serviceName) != null;
     }
 
     @Override
     public void addElem(Service elem) {
-        services.addLast(elem);
+        services.put(elem.getName(), elem);
         storeAndSortByType(elem); // Para organizar certos serviços por tipo
         serviceCounter++;
     }
@@ -56,16 +57,18 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
             if(services.get(i).getServiceType().get().equals(type) && services.get(i).getAverageStars() == stars)
                 return true;
         }
-        return false;
+        return false;       //criar um sepchainhastable com 5 espaços, um para cada rating e em cada espaço fazer outro sep... para ser fácil de acrescentar e remover serviços do rating, ficando com ordem de insereção
     }
 
     @Override
     public boolean isThereAnyServiceWithType(String type) {
-        for(int i = 0; i < serviceCounter; i++){
-            if(services.get(i).getServiceType().get().equals(type))
-                return true;
+        boolean answer = false;
+        switch (type){
+            case "LODGING" -> answer = !servicesLodging.isEmpty();
+            case "EATING" -> answer = !servicesEating.isEmpty();
+            case "LEISURE" -> answer = !servicesLeisure.isEmpty();
         }
-        return false;
+        return answer;
     }
 
     @Override
@@ -73,7 +76,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         long position;
         long nearPos = Long.MAX_VALUE;
         List<Service> nearestServices = new ListInArray<>(DEFAULT_DIMENTION); //ver se a dimenção pode ser 0 ou se temos que mudar
-        List<Service> services = getServiceByType(type);
+        Map<String,Service> services = getServiceByType(type);
         for (int i = 0; i < serviceCounter; i++) {
             Service currentService = services.get(i);
                 long lat2 = services.get(i).getLatitude();
@@ -122,17 +125,13 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     @Override
     public Service getElement(String serviceName) throws ServiceDoesntExistException {
-        int serviceIndex = searchServiceNameIndex(serviceName);
-        if (serviceIndex < 0) {
-            throw new ServiceDoesntExistException();
-        }
-        return services.get(serviceIndex);
+        return services.get(serviceName);
     }
 
 
     @Override
     public Iterator<Service> allServiceIterator() {
-        return new ServiceIterator(services,serviceCounter);
+        return services.values();
     }
 
     @Override
@@ -256,13 +255,13 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     private void storeAndSortByType(Service elem){
         switch (elem.getServiceType().get()) {
-            case "eating" -> servicesEating.addLast(elem);
-            case "lodging" -> servicesLodging.addLast(elem);
-            case "leisure" -> servicesLeisure.addLast(elem);
+            case "eating" -> servicesEating.put(elem.getName(), elem);
+            case "lodging" -> servicesLodging.put(elem.getName(), elem);
+            case "leisure" -> servicesLeisure.put(elem.getName(), elem);
         }
     }
 
-    private List<Service> getServiceByType(String type){
+    private Map<String,Service> getServiceByType(String type){
         return switch (type) {
             case "eating" -> servicesEating;
             case "lodging" -> servicesLodging;

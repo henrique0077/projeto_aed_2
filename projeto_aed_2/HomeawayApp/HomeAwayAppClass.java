@@ -489,8 +489,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
 
     @Override
     public Iterator<Service> getServiceIterator() throws NoServicesYetException{
-        if (!hasServices())
-            throw new NoServicesYetException();
+        if (!hasServices()) throw new NoServicesYetException();
         return servicesCollection.allServiceIterator();
     }
 
@@ -502,7 +501,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
             throw new StudentDoesNotExistException();
         if (!type.equals(ServiceType.EATING.get()) && !type.equals(ServiceType.LODGING.get()) && !type.equals(ServiceType.LEISURE.get()))
             throw new InvalidServiceTypeException();
-        if (!servicesCollection.isThereAnyServiceWithType(type))
+        if (!hasValidServiceByType(type))
             throw new NoServiceOfTypeException();
         if (servicesCollection.isThereServicesWithCertainRate(type, rating))
             throw new NoTypeServiceWithThatRatingException();

@@ -17,7 +17,7 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
 
     public StudentCollectionClass(){
         studentsByName = new SepChainHashTable<>();
-        studentsSorted = new BSTSortedMap<>();
+        studentsSorted = new AVLSortedMap<>();
         studentsByCountry = new SepChainHashTable<>();
         studentsCounter = 0;
     }
@@ -38,7 +38,6 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
 
     @Override
     public void addStudent(String studentName, Student elem, String country) {
-        //students.addLast(elem);
         studentsByName.put(studentName, elem);
         studentsSorted.put(studentName, elem);
         if (studentsByCountry.get(country) == null) { //se aquele país ainda não existir, criamos
@@ -61,11 +60,11 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
         studentsCounter--;
     }
 
-    @Override //para que é que serve este método?
-    public Iterator<Student> clientIterator() {
-        return new InOrderIterator<>()
-        return new StudentsIteratorClass(students,studentsCounter);
-    }
+//    @Override //para que é que serve este método?
+//    public Iterator<Student> clientIterator() {
+//        return new InOrderIterator<>()
+//        return new StudentsIteratorClass(students,studentsCounter);
+//    }
 
     @Override
     public Iterator<Student> allStudentIterator() {
