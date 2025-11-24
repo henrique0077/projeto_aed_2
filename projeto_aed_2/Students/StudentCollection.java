@@ -47,7 +47,7 @@ public interface StudentCollection {
      * Removes a student from the system
      * @param studentName The name of the student to remove
      */
-    void removeElem(String studentName);
+    void removeStudent(String studentName);
 
     /**
      * Returns an iterator over all shapes in the collection.

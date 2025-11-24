@@ -268,7 +268,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
     public void removeStudent(String studentName) throws StudentDoesNotExistException {
         if (isValidStudentName(studentName))
             throw new StudentDoesNotExistException();
-        studentCollection.removeElem(studentName);
+        studentCollection.removeStudent(studentName);
     }
 
     @Override
