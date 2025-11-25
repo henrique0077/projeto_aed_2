@@ -14,6 +14,7 @@ import exceptions.InvalidPositionException;
 import exceptions.ServiceDoesntExistException;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 //import java.util.ArrayList;
 
@@ -23,14 +24,16 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     private final Map<String, Service> servicesEating;
     private final Map<String, Service> servicesLodging;
     private final Map<String, Service> servicesLeisure;
+    private final Map<Integer,Map<String,Service>> servicesByRating;
     private int serviceCounter;
-    private final int DEFAULT_DIMENTION = 1;
+    private final int DEFAULT_DIMENTION = 10;
 
     public ServicesCollectionClass(){
-        services = new SepChainHashTable<>(DEFAULT_DIMENTION);
-        servicesEating = new SepChainHashTable<>(DEFAULT_DIMENTION);
-        servicesLodging = new SepChainHashTable<>(DEFAULT_DIMENTION);
-        servicesLeisure = new SepChainHashTable<>(DEFAULT_DIMENTION);
+        services = new SepChainHashTable<>();
+        servicesEating = new SepChainHashTable<>();
+        servicesLodging = new SepChainHashTable<>();
+        servicesLeisure = new SepChainHashTable<>();
+        servicesByRating = new SepChainHashTable<>(5);
         serviceCounter = 0;
     }
 
@@ -45,20 +48,27 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     }
 
     @Override
-    public void addElem(Service elem) {
+    public void addService(Service elem) {
         services.put(elem.getName(), elem);
         storeAndSortByType(elem); // Para organizar certos serviços por tipo
+        servicesByRating.get(3).put(elem.getName(),elem);// 3 = 4-1 porque o mapa começa na posição 0 e os serviços quando inicializados têm 4 de rating
         serviceCounter++;
     }
 
     @Override
     public boolean isThereServicesWithCertainRate(String type, int stars){
-        for(int i = 0; i < serviceCounter; i++){
-            if(services.get(i).getServiceType().get().equals(type) && services.get(i).getAverageStars() == stars)
-                return true;
+        boolean result = false;
+        Iterator<Service> service = servicesByRating.get(stars-1).values();
+        while(service.hasNext() && !result){                               //acho que isto que fiz agora está melhor que o que está comocomentário
+            Service s = service.next();
+            if(s.getServiceType().toString().equals(type))
+                result = true;
         }
-        return false;       //criar um sepchainhastable com 5 espaços, um para cada rating e em cada espaço fazer outro sep... para ser fácil de acrescentar e remover serviços do rating, ficando com ordem de insereção
-    }
+//        if (servicesByRating.get(stars-1) != null) {        //stars-1 porque temos 5 espaços para 5 estrelas, mas começa no 0 logo só vai até 4
+//            result = isThereAnyServiceWithType(type);
+//        }
+        return result;  //criar um sepchainhastable com 5 espaços, um para cada rating e em cada espaço fazer outro sep... para ser fácil de acrescentar e remover serviços do rating, ficando com ordem de insereção
+    }                   //isto já está feito lê só os comentários \_ ^_^ _/
 
     @Override
     public boolean isThereAnyServiceWithType(String type) {
@@ -101,26 +111,28 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     @Override
     public Service getTheCheapestServiceThrifty(long lat, long lon, String type) {
         int minPrice = Integer.MAX_VALUE;
-        List<Service> cheapestServices = new ListInArray<>(DEFAULT_DIMENTION); //ver se a dimenção pode ser 0 ou se temos que mudar
+        List<Service> cheapestServices = new ListInArray<>(DEFAULT_DIMENTION); //ver se a dimenção pode ser 10 ou se temos que mudar
+        Iterator<Service> it = services.values();
 
-        for (int i = 0; i < serviceCounter; i++) {
-            Service currentService = services.get(i);
+        while (it.hasNext()) {
+            Service next = it.next();
+            int servicePrice = next.getServicePrice();
 
-            if (type.equals(currentService.getServiceType().get())) {
-                int servicePrice = currentService.getServicePrice();
+            if (next.getServiceType().toString().equals(type)) {        //ver se podemos usar o toString no projeto por causa das novas regras
                 if (servicePrice < minPrice) {
                     // If it finds a new smaller Price, clears the array and starts a new one
                     minPrice = servicePrice;
-                    for (int j = 0; j < cheapestServices.size(); j++)
+                    if (!cheapestServices.isEmpty())
                         cheapestServices.removeFirst();
-                    cheapestServices.addLast(currentService);
-                } else if (servicePrice == minPrice) {
-                    // If they have the same minPrice, it adds to an Array
-                    cheapestServices.addLast(currentService);
+                    cheapestServices.addLast(next);
                 }
+//                else if (servicePrice == minPrice) {        //no fim vai ser passado o último, logo não é necessário estarmos a adicionar o segundo, apenas atualizar o mais alto
+//                    // If they have the same minPrice, it adds to an Array
+//                    cheapestServices.addLast(next);
+//                }
             }
         }
-        return cheapestServices.get(0);
+        return cheapestServices.getFirst();
     }
 
     @Override
@@ -136,9 +148,23 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     @Override
     public Iterator<Service> allServiceIteratorSortedRating() {
-        return new ServiceIterator(sortByRating(),serviceCounter);
+        List<Service> allServicesByRating = new ListInArray<>(DEFAULT_DIMENTION);
+        for (int i = 0; i < 5; i++){
+            Iterator<Service> it = servicesByRating.get(i).values();
+            while (it.hasNext())
+                allServicesByRating.addLast(it.next());     //o addLast já tem o ensureCapacity, logo não nos temos que preocupar com o resize
+        }
+        return allServicesByRating.iterator();
     }
 
+    /**
+     * Falta esta merda
+     * @param type The type of the service
+     * @param rating The rating of the service
+     * @param lat
+     * @param lon
+     * @return
+     */
     @Override
     public Iterator<Service> serviceIteratorByType(String type, int rating, long lat, long lon) {
         // Sort by last updated order (ascending)
@@ -172,54 +198,46 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return nearestServices.iterator();
     }
 
-    @Override
-    public List<Service> sortByRating() {
-        // Sort by rating (descending)
-        return sortServices(true);
-    }
+//    private int compareTo(Service other, Service thisService){
+//        // (descending)
+//        if(other.getAverageStars() == 0 || thisService.getAverageStars() == 0) return 1;
+//        if (thisService.getAverageStars() < other.getAverageStars()) return 1;
+//        if (thisService.getAverageStars() > other.getAverageStars()) return -1;
+//        // (descending: newer first)
+//        return  thisService.getLastUpdatedOrder() - other.getLastUpdatedOrder();
+//    }
 
-
-
-    public Iterator<Student> allStudentIterator(){
-        return null;
-    }
-
-    private int compareTo(Service other, Service thisService){
-        // (descending)
-        if(other.getAverageStars() == 0 || thisService.getAverageStars() == 0) return 1;
-        if (thisService.getAverageStars() < other.getAverageStars()) return 1;
-        if (thisService.getAverageStars() > other.getAverageStars()) return -1;
-        // (descending: newer first)
-        return  thisService.getLastUpdatedOrder() - other.getLastUpdatedOrder();
-    }
-
-    private List<Service> sortServices(boolean sortByRating) {
-        int length = services.size();
-        List<Service> temp = new ListInArray<>(DEFAULT_DIMENTION); //ver se a dimenção pode ser 0 ou se temos que mudar
-        // Copy to a TEMP array
-        for (int i = 0; i < length; i++)
-            temp.addLast(services.get(i));
-        //  sort the Array<Service>
-        for (int i = 0; i < length - 1; i++) {
-            for (int j = 0; j < length - i - 1; j++) {
-                boolean shouldSwap;
-                if (sortByRating)
-                    shouldSwap = compareTo(temp.get(j+1), temp.get(j)) > 0;
-                else
-                    shouldSwap = temp.get(j).getLastUpdatedOrder() - temp.get(j+1).getLastUpdatedOrder() > 0;
-
-                if (shouldSwap) {
-                    // Swap elements in the Array<Service>
-                    Service swap = temp.get(j);
-                    temp.remove(j);                 //acho que assim fica bem
-                    temp.add(j+1, swap);
-                    //temp.set(temp.get(j+1),j);        era assim que funcionava. Vou meter em cima como acho que deve funcionar agora com listInArray
-                    //temp.set(swap,j+1);
-                }
-            }
-        }
-        return temp; // Return the sorted array directly
-    }
+    /**
+     * Acho que este método não faz falta, pois com o mapa com 5 posições já temos os ratings ordenados. Logo este aqui em cima tamém de ve poder desaparecer, pois este é o único método que o chama
+     * @return
+     */
+//    private List<Service> sortServices(boolean sortByRating) {
+//        int length = services.size();
+//        List<Service> temp = new ListInArray<>(DEFAULT_DIMENTION); //ver se a dimenção pode ser 0 ou se temos que mudar
+//        // Copy to a TEMP array
+//        for (int i = 0; i < length; i++)
+//            temp.addLast(services.get(i));
+//        //  sort the Array<Service>
+//        for (int i = 0; i < length - 1; i++) {
+//            for (int j = 0; j < length - i - 1; j++) {
+//                boolean shouldSwap;
+//                if (sortByRating)
+//                    shouldSwap = compareTo(temp.get(j+1), temp.get(j)) > 0;
+//                else
+//                    shouldSwap = temp.get(j).getLastUpdatedOrder() - temp.get(j+1).getLastUpdatedOrder() > 0;
+//
+//                if (shouldSwap) {
+//                    // Swap elements in the Array<Service>
+//                    Service swap = temp.get(j);
+//                    temp.remove(j);                 //acho que assim fica bem
+//                    temp.add(j+1, swap);
+//                    //temp.set(temp.get(j+1),j);        era assim que funcionava. Vou meter em cima como acho que deve funcionar agora com listInArray
+//                    //temp.set(swap,j+1);
+//                }
+//            }
+//        }
+//        return temp; // Return the sorted array directly
+//    }
 
     public Iterator<String> getDescriptions(){
         List<String> temp = new ListInArray<>(DEFAULT_DIMENTION);
@@ -243,14 +261,6 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
             }
         }
         return temp.iterator();
-    }
-
-
-    private int searchServiceNameIndex(String serviceName){
-        for(int i = 0; i < serviceCounter; i++)
-            if(serviceName.equalsIgnoreCase(services.get(i).getName()))
-                return i;
-        return -1;
     }
 
     private void storeAndSortByType(Service elem){

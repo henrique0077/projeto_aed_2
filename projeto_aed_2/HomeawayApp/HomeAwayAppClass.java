@@ -212,11 +212,11 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
         if (serviceNameAlreadyExists(serviceName))
             throw new ServiceAlreadyExistsException();
         switch (serviceType) {
-            case EATING -> servicesCollection.addElem(
+            case EATING -> servicesCollection.addService(
                     new EatingServiceClass(serviceName, lat, lon, price, value, updateCounter++));
-            case LODGING -> servicesCollection.addElem(
+            case LODGING -> servicesCollection.addService(
                     new LodgingServiceClass(serviceName, lat, lon, price, value, updateCounter++));
-            case LEISURE -> servicesCollection.addElem(
+            case LEISURE -> servicesCollection.addService(
                     new LeisureServiceClass(serviceName, lat, lon, price, value, updateCounter++));
         }
     }
@@ -364,7 +364,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
         if (!isValidServiceName(serviceName))
             throw new ServiceDoesntExistException();
         Service service = servicesCollection.getElement(serviceName);
-        servicesCollection.getElement(serviceName).addDescription(description);
+        service.addDescription(description);
         int oldUpdateCounter = service.getLastUpdatedOrder();
         int oldStars = service.getAverageStars();
         // Increment FIRST, then pass to addRating
@@ -432,8 +432,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
         Service service = servicesCollection.getElement(currentStudentPos);
         long studentLat = service.getLatitude();
         long studentLon = service.getLongitude();
-        Student obj = studentCollection.getElement(studentName);
-        if (obj instanceof ThriftyStudentClass thriftyStudent) {
+        if (student instanceof ThriftyStudentClass thriftyStudent) {
             Service cheapestService = servicesCollection.getTheCheapestServiceThrifty(studentLat, studentLon, serviceType);
             return handleFindLogic(currentStudentPos, serviceType, thriftyStudent, cheapestService, studentName);
         }

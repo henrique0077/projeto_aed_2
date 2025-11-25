@@ -36,7 +36,7 @@ public interface ServicesCollection extends Serializable {
      * @param elem The shape to add.
      * @pre elem != null && this.hasElem(elem.getID())
      */
-    void addElem(Service elem);
+    void addService(Service elem);
 
     /**
      * Checks if there are any services with a certain rating and type
