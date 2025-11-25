@@ -5,18 +5,13 @@
 
 package Services;
 
-import Enumerators.*;
-import Students.Student;
-import Students.StudentCollection;
+
 import dataStructures.*;
-import dataStructures.FilterIterator;
-import exceptions.InvalidPositionException;
+
 import exceptions.ServiceDoesntExistException;
 
 import java.io.Serializable;
-import java.util.HashMap;
 
-//import java.util.ArrayList;
 
 public class ServicesCollectionClass implements ServicesCollection, Serializable {
 
@@ -87,25 +82,26 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         long nearPos = Long.MAX_VALUE;
         List<Service> nearestServices = new ListInArray<>(DEFAULT_DIMENTION); //ver se a dimenção pode ser 0 ou se temos que mudar
         Map<String,Service> services = getServiceByType(type);
-        for (int i = 0; i < serviceCounter; i++) {
-            Service currentService = services.get(i);
-                long lat2 = services.get(i).getLatitude();
-                long lon2 = services.get(i).getLongitude();
-                position = Math.abs(lat-lat2) + Math.abs(lon-lon2);
 
-                if (position < nearPos) {
-                    // Encontrou um novo menor preço, limpa a lista e adiciona este
-                    nearPos = position;
-                    //Para dar clear Na array ? posso
-                    for (int j = 0; j < nearestServices.size(); j++)
-                        nearestServices.removeFirst();
-                    nearestServices.addLast(currentService);
-                } else if (position == nearPos) {
-                    // Mesmo preço mínimo, adiciona também
-                    nearestServices.addLast(currentService);
+        Iterator<Service> it = services.values();
+
+        while (it.hasNext()) {
+            Service currentService = it.next();
+            long lat2 = currentService.getLatitude();
+            long lon2 = currentService.getLongitude();
+            position = Math.abs(lat - lat2) + Math.abs(lon - lon2);
+
+            if (position < nearPos) {
+                nearPos = position;
+                while (!nearestServices.isEmpty()) {
+                    nearestServices.removeFirst();
                 }
+                nearestServices.addLast(currentService);
+            } else if (position == nearPos) {
+                nearestServices.addLast(currentService);
+            }
         }
-        return nearestServices.get(0); // ir buscar o primeiro
+        return nearestServices.get(0);
     }
 
     @Override
@@ -157,6 +153,11 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return allServicesByRating.iterator();
     }
 
+    @Override
+    public List<Service> sortByRating() {
+        return null;
+    }
+
     /**
      * Falta esta merda
      * @param type The type of the service
@@ -167,7 +168,6 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
      */
     @Override
     public Iterator<Service> serviceIteratorByType(String type, int rating, long lat, long lon) {
-        // Sort by last updated order (ascending)
         List<Service> sorted = sortServices(false);
         Iterator<Service> s = new ServiceTypeIterator(sorted, serviceCounter, type, rating);
         List<Service> servicesToCheck = new ListInArray<>(DEFAULT_DIMENTION);
@@ -175,76 +175,65 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
             servicesToCheck.addLast(s.next());
         }
         List<Service> nearestServices = new ListInArray<>(DEFAULT_DIMENTION);
-        long position;
         long nearPos = Long.MAX_VALUE;
-        //TODO em vez de de neares meter o tocheck
         for (int i = 0; i < servicesToCheck.size(); i++) {
-            Service currentService = nearestServices.get(i);
-            long lat2 = servicesToCheck.get(i).getLatitude();
-            long lon2 = servicesToCheck.get(i).getLongitude();
-            position = Math.abs(lat - lat2) + Math.abs(lon - lon2);
+            Service currentService = servicesToCheck.get(i);
+            long lat2 = currentService.getLatitude();
+            long lon2 = currentService.getLongitude();
+            long position = Math.abs(lat - lat2) + Math.abs(lon - lon2);
 
             if (position < nearPos) {
                 nearPos = position;
-                //Para dar clear Na array ? posso
-                for (int j = 0; j < nearestServices.size(); j++)
-                    nearestServices.removeFirst();
+                nearestServices = new ListInArray<>(DEFAULT_DIMENTION); // aqui limpa
                 nearestServices.addLast(currentService);
             } else if (position == nearPos) {
-                // Mesmo preço mínimo, adiciona também
                 nearestServices.addLast(currentService);
             }
         }
         return nearestServices.iterator();
     }
 
-//    private int compareTo(Service other, Service thisService){
-//        // (descending)
-//        if(other.getAverageStars() == 0 || thisService.getAverageStars() == 0) return 1;
-//        if (thisService.getAverageStars() < other.getAverageStars()) return 1;
-//        if (thisService.getAverageStars() > other.getAverageStars()) return -1;
-//        // (descending: newer first)
-//        return  thisService.getLastUpdatedOrder() - other.getLastUpdatedOrder();
-//    }
 
-    /**
-     * Acho que este método não faz falta, pois com o mapa com 5 posições já temos os ratings ordenados. Logo este aqui em cima tamém de ve poder desaparecer, pois este é o único método que o chama
-     * @return
-     */
-//    private List<Service> sortServices(boolean sortByRating) {
-//        int length = services.size();
-//        List<Service> temp = new ListInArray<>(DEFAULT_DIMENTION); //ver se a dimenção pode ser 0 ou se temos que mudar
-//        // Copy to a TEMP array
-//        for (int i = 0; i < length; i++)
-//            temp.addLast(services.get(i));
-//        //  sort the Array<Service>
-//        for (int i = 0; i < length - 1; i++) {
-//            for (int j = 0; j < length - i - 1; j++) {
-//                boolean shouldSwap;
-//                if (sortByRating)
-//                    shouldSwap = compareTo(temp.get(j+1), temp.get(j)) > 0;
-//                else
-//                    shouldSwap = temp.get(j).getLastUpdatedOrder() - temp.get(j+1).getLastUpdatedOrder() > 0;
-//
-//                if (shouldSwap) {
-//                    // Swap elements in the Array<Service>
-//                    Service swap = temp.get(j);
-//                    temp.remove(j);                 //acho que assim fica bem
-//                    temp.add(j+1, swap);
-//                    //temp.set(temp.get(j+1),j);        era assim que funcionava. Vou meter em cima como acho que deve funcionar agora com listInArray
-//                    //temp.set(swap,j+1);
-//                }
-//            }
-//        }
-//        return temp; // Return the sorted array directly
-//    }
+    private List<Service> sortServices(boolean ascending) {
+        Comparator<Service> comparator = new Comparator<Service>() {
+            @Override
+            public int compare(Service s1, Service s2) {
+                return compareServices(s1, s2, ascending);
+            }
+        };
+
+        SortedDoublyLinkedList<Service> sortedList = new SortedDoublyLinkedList<>(comparator);
+        Iterator<Service> it = services.values();
+        while (it.hasNext()) {
+            sortedList.add(it.next());
+        }
+        List<Service> result = new ListInArray<>(serviceCounter);
+        Iterator<Service> sortedIt = sortedList.iterator();
+        while (sortedIt.hasNext()) {
+            result.addLast(sortedIt.next());
+        }
+        return result;
+    }
+
+
+    private int compareServices(Service s1, Service s2, boolean ascending) {
+        if (ascending) {
+            if (s1.getLastUpdatedOrder() < s2.getLastUpdatedOrder()) return -1;
+            else if (s1.getLastUpdatedOrder() > s2.getLastUpdatedOrder()) return 1;
+        } else {
+            if (s1.getLastUpdatedOrder() > s2.getLastUpdatedOrder()) return -1;
+            else if (s1.getLastUpdatedOrder() < s2.getLastUpdatedOrder()) return 1;
+        }
+        return 0;
+    }
 
     public Iterator<String> getDescriptions(){
         List<String> temp = new ListInArray<>(DEFAULT_DIMENTION);
-        for (int i = 0; i < serviceCounter; i++){
-            Iterator<String> it = services.get(i).getDescriptions();
-            while (it.hasNext()){
-                temp.addLast(it.next());
+        Iterator<Service> it = services.values();
+        while (it.hasNext()) {
+            Iterator<String> descIt = it.next().getDescriptions();
+            while (descIt.hasNext()) {
+                temp.addLast(descIt.next());
             }
         }
         return temp.iterator();
@@ -252,11 +241,15 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     public Iterator<Service> getServicesWithTag(String tag){
         List<Service> temp = new ListInArray<>(DEFAULT_DIMENTION);
-        for (int i = 0; i < services.size(); i++){
-            Iterator<String> tags = services.get(i).getDescriptions();
-            while (tags.hasNext()){
-                if (tags.next().equalsIgnoreCase(tag)){
-                    temp.addLast(services.get(i));
+        Iterator<Service> it = services.values();
+        while (it.hasNext()) {
+            Service s = it.next();
+            Iterator<String> tagsIt = s.getDescriptions();
+            boolean added = false;
+            while (tagsIt.hasNext() && !added) {
+                if (tagsIt.next().equalsIgnoreCase(tag)) {
+                    temp.addLast(s);
+                    added = true;
                 }
             }
         }
