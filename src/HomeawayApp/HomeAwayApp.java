@@ -33,7 +33,6 @@ public interface HomeAwayApp {
 
     /**
      * Checks if the bound name already exists
-     * @param name The name of the bound to check
      * @return True if it already exists. False otherwise
      */
 

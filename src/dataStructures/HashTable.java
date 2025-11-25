@@ -30,7 +30,6 @@ abstract class HashTable<K,V> implements Map<K,V>{
      // Returns the hash code of the specified key,
      // which is an integer in the range 0, ..., b-1.
      public static int hash( String key ){
-
          int a = 127; // a is a prime number.
          int b = 2147483647; // b is a prime number.
          int hashCode = 0;
@@ -40,7 +39,6 @@ abstract class HashTable<K,V> implements Map<K,V>{
          return hashCode;
      }
      // Protected Static Methods
-
      // Returns a prime number that is not less than the
      // specified number; or zero if all such primes are greater
      // than Integer.MAX VALUE.

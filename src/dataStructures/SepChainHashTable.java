@@ -1,4 +1,9 @@
 package dataStructures;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 /**
  * SepChain Hash Table
  * @author AED  Team
@@ -13,7 +18,7 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
     static final float MAX_LOAD_FACTOR =0.9f;
 
     // The array of Map with singly linked list.
-    private Map<K,V>[] table;
+    private transient Map<K,V>[] table;
 
     public SepChainHashTable( ){
         this(DEFAULT_CAPACITY);
@@ -26,6 +31,22 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
         for ( int i = 0; i < arraySize; i++ )
             table[i] = new MapSinglyList<>();
         maxSize = (int)(arraySize * MAX_LOAD_FACTOR);
+    }
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject(); // escreve os campos normais (não temos aqui, mas é boa prática)
+        oos.writeFloat(IDEAL_LOAD_FACTOR);
+        oos.writeFloat(MAX_LOAD_FACTOR);
+        oos.writeInt(currentSize); // escreve o tamanho
+        for ( int i = 0; i < table.length; i++ )
+            oos.writeObject(table[i]);
+        oos.flush();
+    }
+
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject(); // lê os campos normais
+        int size = ois.readInt(); // lê o tamanho
+
     }
 
     // Returns the hash value of the specified key.
@@ -116,23 +137,23 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
 //        return null;
 //    }
     /**public V remove(K key) {
-        int index = hash(key);
-        Map<K, V> bucket = table[index];
+     int index = hash(key);
+     Map<K, V> bucket = table[index];
 
-        // Primeiro verificar se a chave existe no bucket
-        Iterator<Entry<K, V>> it = bucket.iterator();
-        while (it.hasNext()) {
-            Entry<K, V> entry = it.next();
-            if (entry.key().equals(key)) {
-                // Chave encontrada - remover e retornar valor
-                V oldValue = entry.value();
-                bucket.remove(key); // ou it.remove() se for seguro
-                currentSize--;
-                return oldValue;
-            }
-        }
-        return null;
-    }*/
+     // Primeiro verificar se a chave existe no bucket
+     Iterator<Entry<K, V>> it = bucket.iterator();
+     while (it.hasNext()) {
+     Entry<K, V> entry = it.next();
+     if (entry.key().equals(key)) {
+     // Chave encontrada - remover e retornar valor
+     V oldValue = entry.value();
+     bucket.remove(key); // ou it.remove() se for seguro
+     currentSize--;
+     return oldValue;
+     }
+     }
+     return null;
+     }*/
     public V remove(K key) {
         int index = hash(key);
         V oldValue = table[index].remove(key);

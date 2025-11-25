@@ -212,11 +212,11 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
         if (serviceNameAlreadyExists(serviceName))
             throw new ServiceAlreadyExistsException();
         switch (serviceType) {
-            case EATING -> servicesCollection.addService(
+            case EATING -> servicesCollection.addService(serviceName,
                     new EatingServiceClass(serviceName, lat, lon, price, value, updateCounter++));
-            case LODGING -> servicesCollection.addService(
+            case LODGING -> servicesCollection.addService(serviceName,
                     new LodgingServiceClass(serviceName, lat, lon, price, value, updateCounter++));
-            case LEISURE -> servicesCollection.addService(
+            case LEISURE -> servicesCollection.addService(serviceName,
                     new LeisureServiceClass(serviceName, lat, lon, price, value, updateCounter++));
         }
     }
@@ -372,6 +372,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
         int newCount = service.getRatingCount();
         int newStars = Math.round((newTotal + rating) / (newCount + 1));
         if (oldStars != newStars) {
+            servicesCollection.updateRating(serviceName, oldStars, newStars);
             updateCounter++;
             service.updateCounterRating();
             service.addRating(rating, updateCounter);

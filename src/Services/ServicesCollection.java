@@ -36,7 +36,7 @@ public interface ServicesCollection extends Serializable {
      * @param elem The shape to add.
      * @pre elem != null && this.hasElem(elem.getID())
      */
-    void addService(Service elem);
+    void addService(String serviceName, Service elem);
 
     /**
      * Checks if there are any services with a certain rating and type
@@ -104,4 +104,5 @@ public interface ServicesCollection extends Serializable {
 
     Iterator<Service> getServicesWithTag(String tag);
 
+    void updateRating(String serviceName, int oldStars, int newStars);
 }
