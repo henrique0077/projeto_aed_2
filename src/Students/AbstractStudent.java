@@ -137,6 +137,7 @@ public abstract class AbstractStudent implements Student, Serializable {
 
     @Override
     public Iterator<Service> getVisitedLocationsIterator() {
-        return new ServiceIterator(visitedLocations,counterLocations);
+        //return new ServiceIterator(visitedLocations,counterLocations);
+        return visitedLocations.iterator();
     }
 }
