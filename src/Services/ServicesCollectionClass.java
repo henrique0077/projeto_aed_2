@@ -5,13 +5,12 @@
 
 package Services;
 
-
 import dataStructures.*;
 
 import exceptions.ServiceDoesntExistException;
-
+import Enumerators.ServiceType;
+import Enumerators.StudentType;
 import java.io.Serializable;
-import java.util.ArrayList;
 
 
 public class ServicesCollectionClass implements ServicesCollection, Serializable {
@@ -21,11 +20,11 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     private final Map<String, Service> servicesEating;
     private final Map<String, Service> servicesLodging;
     private final Map<String, Service> servicesLeisure;
-    private final Map<Integer,Map<String,Service>> servicesByRating;
+    private final Map<Integer, Map<String, Service>> servicesByRating;
     private int serviceCounter;
     private final int DEFAULT_DIMENTION = 10;
 
-    public ServicesCollectionClass(){
+    public ServicesCollectionClass() {
         servicesInOrder = new SinglyLinkedList<>();
         services = new SepChainHashTable<>();
         servicesEating = new SepChainHashTable<>();
@@ -47,25 +46,27 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     @Override
     public boolean hasElem(String serviceName) {
-        return services.get(serviceName) != null;
+        // Henrique henrique
+        return services.get(serviceName.toUpperCase()) != null;
     }
 
     @Override
     public void addService(String serviceName, Service elem) {
+        String service  = serviceName.toUpperCase();
         servicesInOrder.addLast(elem);
-        services.put(serviceName, elem);
+        services.put(service, elem);
         storeAndSortByType(elem); // Para organizar certos serviços por tipo
         serviceCounter++;
-        servicesByRating.get(3).put(serviceName,elem);// 3 = 4-1 porque o mapa começa na posição 0 e os serviços quando inicializados têm 4 de rating
+        servicesByRating.get(3).put(service, elem);// 3 = 4-1 porque o mapa começa na posição 0 e os serviços quando inicializados têm 4 de rating
     }
 
     @Override
-    public boolean isThereServicesWithCertainRate(String type, int stars){
+    public boolean isThereServicesWithCertainRate(String type, int stars) {
         boolean result = false;
-        Iterator<Service> service = servicesByRating.get(stars-1).values();
-        while(service.hasNext() && !result){                               //acho que isto que fiz agora está melhor que o que está comocomentário
+        Iterator<Service> service = servicesByRating.get(stars - 1).values();
+        while (service.hasNext() && !result) {                               //acho que isto que fiz agora está melhor que o que está comocomentário
             Service s = service.next();
-            if(s.getServiceType().toString().equals(type))
+            if (s.getServiceType().toString().equals(type))
                 result = true;
         }
 //        if (servicesByRating.get(stars-1) != null) {        //stars-1 porque temos 5 espaços para 5 estrelas, mas começa no 0 logo só vai até 4
@@ -74,7 +75,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return result;  //criar um sepchainhastable com 5 espaços, um para cada rating e em cada espaço fazer outro sep... para ser fácil de acrescentar e remover serviços do rating, ficando com ordem de insereção
     }                   //isto já está feito lê só os comentários \_ ^_^ _/
 
-    public void updateRating(String serviceName, int oldStars, int newStars){
+    public void updateRating(String serviceName, int oldStars, int newStars) {
         servicesByRating.get(oldStars).remove(serviceName);
         servicesByRating.get(newStars).put(serviceName, services.get(serviceName));
     }
@@ -83,7 +84,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     @Override
     public boolean isThereAnyServiceWithType(String type) {
         boolean answer = false;
-        switch (type){
+        switch (type) {
             case "LODGING" -> answer = !servicesLodging.isEmpty();
             case "EATING" -> answer = !servicesEating.isEmpty();
             case "LEISURE" -> answer = !servicesLeisure.isEmpty();
@@ -93,12 +94,12 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     @Override
     public Service getTheNearestService(long lat, long lon, String type) {
-        Map<String,Service> service = getServiceByType(type);
+        Map<String, Service> service = getServiceByType(type);
         List<Service> nearestServices = getNearest(lat, lon, service);
         return nearestServices.get(0);
     }
 
-    private List<Service> getNearest(long lat, long lon, Map<String,Service> service){
+    private List<Service> getNearest(long lat, long lon, Map<String, Service> service) {
         long position;
         long nearPos = Long.MAX_VALUE;
         List<Service> nearestServices = new ListInArray<>(DEFAULT_DIMENTION);
@@ -151,7 +152,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     @Override
     public Service getElement(String serviceName) throws ServiceDoesntExistException {
-        return services.get(serviceName);
+        return services.get(serviceName.toUpperCase());
     }
 
 
@@ -163,7 +164,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     @Override
     public Iterator<Service> allServiceIteratorSortedRating() {
         List<Service> allServicesByRating = new ListInArray<>(DEFAULT_DIMENTION);
-        for (int i = 0; i < 5; i++){
+        for (int i = 0; i < 5; i++) {
             Iterator<Service> it = servicesByRating.get(i).values();
             while (it.hasNext())
                 allServicesByRating.addLast(it.next());     //o addLast já tem o ensureCapacity, logo não nos temos que preocupar com o resize
@@ -178,7 +179,8 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     /**
      * Falta esta merda
-     * @param type The type of the service
+     *
+     * @param type   The type of the service
      * @param rating The rating of the service
      * @param lat
      * @param lon
@@ -210,16 +212,17 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 //        }
 //        return nearestServices.iterator();
 //    }
+
     public Iterator<Service> serviceIteratorByType(String type, int rating, long lat, long lon) {
         //if (type != null)
-        Map<String,Service> allServices = new SepChainHashTable<>(DEFAULT_DIMENTION);
-        Map<String,Service> typeMap = getServiceByType(type);
+        Map<String, Service> allServices = new SepChainHashTable<>(DEFAULT_DIMENTION);
+        Map<String, Service> typeMap = getServiceByType(type);
         Iterator<String> typeIterator = typeMap.keys();
-        Iterator<String> ratingIterator = servicesByRating.get(rating-1).keys();
-        while(typeIterator.hasNext() && ratingIterator.hasNext()){
+        Iterator<String> ratingIterator = servicesByRating.get(rating - 1).keys();
+        while (typeIterator.hasNext() && ratingIterator.hasNext()) {
             String nextType = typeIterator.next();
             String nextRating = ratingIterator.next();
-            if(nextType.equals(nextRating)){
+            if (nextType.equals(nextRating)) {
                 allServices.put(nextType, typeMap.get(nextType));
             }
         }
@@ -227,41 +230,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return allServices.values();
     }
 
-
-    private List<Service> sortServices(boolean ascending) {
-        Comparator<Service> comparator = new Comparator<Service>() {
-            @Override
-            public int compare(Service s1, Service s2) {
-                return compareServices(s1, s2, ascending);
-            }
-        };
-
-        SortedDoublyLinkedList<Service> sortedList = new SortedDoublyLinkedList<>(comparator);
-        Iterator<Service> it = services.values();
-        while (it.hasNext()) {
-            sortedList.add(it.next());
-        }
-        List<Service> result = new ListInArray<>(serviceCounter);
-        Iterator<Service> sortedIt = sortedList.iterator();
-        while (sortedIt.hasNext()) {
-            result.addLast(sortedIt.next());
-        }
-        return result;
-    }
-
-
-    private int compareServices(Service s1, Service s2, boolean ascending) {
-        if (ascending) {
-            if (s1.getLastUpdatedOrder() < s2.getLastUpdatedOrder()) return -1;
-            else if (s1.getLastUpdatedOrder() > s2.getLastUpdatedOrder()) return 1;
-        } else {
-            if (s1.getLastUpdatedOrder() > s2.getLastUpdatedOrder()) return -1;
-            else if (s1.getLastUpdatedOrder() < s2.getLastUpdatedOrder()) return 1;
-        }
-        return 0;
-    }
-
-    public Iterator<String> getDescriptions(){
+    public Iterator<String> getDescriptions() {
         List<String> temp = new ListInArray<>(DEFAULT_DIMENTION);
         Iterator<Service> it = services.values();
         while (it.hasNext()) {
@@ -273,7 +242,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return temp.iterator();
     }
 
-    public Iterator<Service> getServicesWithTag(String tag){
+    public Iterator<Service> getServicesWithTag(String tag) {
         List<Service> temp = new ListInArray<>(DEFAULT_DIMENTION);
         Iterator<Service> it = services.values();
         while (it.hasNext()) {
@@ -290,19 +259,21 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return temp.iterator();
     }
 
-    private void storeAndSortByType(Service elem){
-        switch (elem.getServiceType().get()) {
-            case "eating" -> servicesEating.put(elem.getName(), elem);
-            case "lodging" -> servicesLodging.put(elem.getName(), elem);
-            case "leisure" -> servicesLeisure.put(elem.getName(), elem);
+    private void storeAndSortByType(Service elem) {
+        switch (elem.getServiceType()) {
+            case ServiceType.EATING -> servicesEating.put(elem.getName(), elem);
+            case ServiceType.LODGING -> servicesLodging.put(elem.getName(), elem);
+            case ServiceType.LEISURE -> servicesLeisure.put(elem.getName(), elem);
         }
     }
 
-    private Map<String,Service> getServiceByType(String type){
+    private Map<String, Service> getServiceByType(String type) {
+       String i = ServiceType.EATING.get();
+
         return switch (type) {
-            case "eating" -> servicesEating;
-            case "lodging" -> servicesLodging;
-            case "leisure" -> servicesLeisure;
+            case "EATING" -> servicesEating;
+            case "LODGING" -> servicesLodging;
+            case "LEISURE" -> servicesLeisure;
             default -> null;
         };
     }

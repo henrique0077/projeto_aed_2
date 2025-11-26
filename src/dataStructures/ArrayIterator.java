@@ -1,4 +1,7 @@
 package dataStructures;
+
+import java.io.Serializable;
+
 /**
  * Array Iterator
  * @author AED  Team
@@ -6,10 +9,10 @@ package dataStructures;
  * @param <E> Generic Element
  *
  */
-class ArrayIterator<E> implements Iterator<E> {
-    private E[] elems;
-    private int counter;
-    private int current;
+class ArrayIterator<E> implements Iterator<E>, Serializable {
+    private transient E[] elems;
+    private transient int counter;
+    private transient int current;
     
     public ArrayIterator(E[] elems, int counter) {
         this.elems = elems;

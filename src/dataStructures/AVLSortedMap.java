@@ -1,4 +1,11 @@
 package dataStructures;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.Map;
+
 /**
  * AVL Tree Sorted Map
  * @author AED  Team
@@ -6,7 +13,36 @@ package dataStructures;
  * @param <K> Generic Key
  * @param <V> Generic Value
  */
-public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V>{
+public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V>  implements Serializable {
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+        oos.writeInt(currentSize);
+
+        if (currentSize > 0) {
+            Iterator<Entry<K,V>> iterator = this.iterator();
+            while (iterator.hasNext()) {
+                oos.writeObject(iterator.next());
+            }
+        }
+        oos.flush();
+    }
+
+    @SuppressWarnings("unchecked")
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject();
+
+        int size = ois.readInt();
+
+        root = null;
+        currentSize = 0;
+
+        for (int i = 0; i < size; i++) {
+            Entry<K, V> entry = (Entry<K, V>) ois.readObject();
+            this.put(entry.key(), entry.value());
+        }
+    }
+
     /**
      * 
      * @param key

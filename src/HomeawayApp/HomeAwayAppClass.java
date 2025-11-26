@@ -201,7 +201,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
     public void addService(ServiceType serviceType, long lat, long lon, int price, String serviceName, int value) throws InvalidServiceTypeException,
             InvalidPositionException, PriceEqualOrLessThenZeroException, InvalidServiceDiscountException, InvalidServiceCapacityException, ServiceAlreadyExistsException {
         //if (ServiceType.get(serviceType)) throw new InvalidServiceTypeException();
-        if (isInvalidLocation(lat, lon, serviceName))
+        if (isInvalidLocation(lat, lon))
             throw new InvalidPositionException();
         if (price <= 0)
             throw new PriceEqualOrLessThenZeroException();
@@ -229,7 +229,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
         return serviceType.equals(ServiceType.EATING.get()) || serviceType.equals(ServiceType.LODGING.get()) || serviceType.equals(ServiceType.LEISURE.get());
     }
 
-    private boolean isInvalidLocation(long lat, long lon, String serviceName) {
+    private boolean isInvalidLocation(long lat, long lon) {
         long bottomLat = currentBound.getBottomLat();
         long topLat = currentBound.getTopLat();
         long leftLon = currentBound.getLeftLon();
@@ -257,9 +257,10 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
 //todo add the student to a country
 
         switch (studentType) {
-            case OUTGOING -> studentCollection.addStudent(studentName,new OutgoingStudent(studentName, lodgingService, country), country);
-            case THRIFTY -> studentCollection.addStudent(studentName, new ThriftyStudentClass(studentName, lodgingService, country), country);
+            case OUTGOING -> studentCollection.addStudent(studentName, new OutgoingStudent(studentName, lodgingService, country), country);
             case BOOKISH -> studentCollection.addStudent(studentName, new BookishStudent(studentName, lodgingService, country), country);
+            case THRIFTY -> studentCollection.addStudent(studentName, new ThriftyStudentClass(studentName, lodgingService, country), country);
+
         }
         studentCollection.getElement(studentName).changeCapacityOfTheLodging(studentCollection.getElement(studentName));
     }
@@ -476,7 +477,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
 
     @Override
     public Iterator<Student> getUserIterator(String choice) {
-        if (choice.equals("all"))
+        if (choice.equalsIgnoreCase("all"))
             return studentCollection.allStudentIterator(); //falta ordenar por ordem alfabética
         else
             return studentCollection.byCountryIterator(choice); //falta criar o iterador por países     (choice = país) -> else

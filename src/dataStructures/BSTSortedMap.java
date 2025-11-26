@@ -1,6 +1,9 @@
 package dataStructures;
 
 import dataStructures.exceptions.EmptyMapException;
+
+import java.io.Serializable;
+
 /**
  * Binary Search Tree Sorted Map
  * @author AED  Team
@@ -8,7 +11,7 @@ import dataStructures.exceptions.EmptyMapException;
  * @param <K> Generic Key
  * @param <V> Generic Value
  */
-public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V>> implements SortedMap<K,V>{
+public class BSTSortedMap<K extends Comparable<K>,V> extends BTree<Map.Entry<K,V>> implements SortedMap<K,V> , Serializable {
 
     /**
      * Constructor

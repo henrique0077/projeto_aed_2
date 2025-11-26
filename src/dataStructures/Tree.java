@@ -5,23 +5,42 @@ package dataStructures;
  * @version 1.0
  * @param <E> Generic element
  */
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.io.IOException;
 
 abstract class Tree<E> implements Serializable {
 
     /**
      * Root
      */
-    protected Node<E> root;
+    protected transient Node<E> root;
 
     /**
      * Number of elements
      */
-    protected int currentSize;
+    protected transient int currentSize;
 
     public Tree(){
         root=null;
         currentSize=0;
+    }
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+
+        oos.writeInt(currentSize);
+
+        oos.flush();
+    }
+
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject();
+
+        this.currentSize = ois.readInt();
+
+        this.root = null;
     }
 
     /**

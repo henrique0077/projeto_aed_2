@@ -12,7 +12,7 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
 
     private final Map<String, Student> studentsByName;
     private final Map<String, Student> studentsSorted;
-    private final Map<String, Map<String, Student>> studentsByCountry;  //este não tinhamos no relatório, mas acho boa ideia
+    private final Map<String, List<Student>> studentsByCountry;  //este não tinhamos no relatório, mas acho boa ideia
     private int studentsCounter;
 
     public StudentCollectionClass(){
@@ -29,7 +29,7 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
 
     @Override
     public boolean hasStudent(String studentName) {
-        return studentsByName.get(studentName) != null;
+        return studentsByName.get(studentName.toUpperCase()) != null;
     }
 
     public int getSize() {
@@ -38,26 +38,38 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
 
     @Override
     public void addStudent(String studentName, Student elem, String country) {
-        studentsByName.put(studentName, elem);
-        studentsSorted.put(studentName, elem);
-        if (studentsByCountry.get(country) == null) { //se aquele país ainda não existir, criamos
-            studentsByCountry.put(country, new SepChainHashTable<>());
+        String student = studentName.toUpperCase();
+        String countryCode = country.toUpperCase();
+
+        studentsByName.put(student, elem);
+        studentsSorted.put(student, elem);
+        if (studentsByCountry.get(countryCode) == null) { //se aquele país ainda não existir, criamos
+            studentsByCountry.put(countryCode, new DoublyLinkedList<>());
         }
-        studentsByCountry.get(country).put(studentName, elem);
+        studentsByCountry.get(countryCode).addLast(elem);
         studentsCounter++;
     }
 
     @Override
     public Student getElement(String studentName) {
-        return studentsByName.get(studentName);
+        return studentsByName.get(studentName.toUpperCase());
     }
 
     @Override
     public void removeStudent(String studentName) {
+        String country = getElement(studentName.toUpperCase()).getCountry().toUpperCase();
         studentsByName.remove(studentName);
         studentsSorted.remove(studentName);
-        studentsByCountry.get(getElement(studentName).getCountry()).remove(studentName); //isto não está bem. Temos que dar uma key, mas o nome dele está dentro do Objeto que é o value. Talvez seja um mapa dentro de um mapa
+        studentsByCountry.get(country).remove(getStudentIndex(studentName.toUpperCase(), country));
         studentsCounter--;
+    }
+
+    private int getStudentIndex(String studentName, String country) {
+        for(int i = 0; i < studentsCounter; i++){
+            if(studentName.equals(studentsByCountry.get(country.toUpperCase()).get(i).getName()))
+                return i;
+        }
+        return -1;
     }
 
 //    @Override //para que é que serve este método?
@@ -72,7 +84,7 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
     }
 
     public Iterator<Student> byCountryIterator(String country){
-        return studentsByCountry.get(country).values();
+        return studentsByCountry.get(country.toUpperCase()).iterator();
     }
 
 

@@ -3,6 +3,7 @@ package dataStructures;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 /**
  * SepChain Hash Table
@@ -11,7 +12,7 @@ import java.io.ObjectOutputStream;
  * @param <K> Generic Key
  * @param <V> Generic Value
  */
-public class SepChainHashTable<K,V> extends HashTable<K,V> {
+public class SepChainHashTable<K,V> extends HashTable<K,V> implements Serializable {
 
     //Load factors
     static final float IDEAL_LOAD_FACTOR =0.75f;
@@ -33,6 +34,7 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
         maxSize = (int)(arraySize * MAX_LOAD_FACTOR);
     }
 
+/**
     private void writeObject(ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject(); // escreve os campos normais (não temos aqui, mas é boa prática)
         oos.writeFloat(IDEAL_LOAD_FACTOR);
@@ -41,13 +43,66 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> {
         for ( int i = 0; i < table.length; i++ )
             oos.writeObject(table[i]);
         oos.flush();
+    }*/
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+        oos.writeInt(currentSize);
+
+        for (Map<K,V> bucket : table) {
+            Iterator<Entry<K,V>> it = bucket.iterator();
+            while (it.hasNext()) {
+                oos.writeObject(it.next());
+            }
+        }
+        oos.flush();
     }
 
+    /**@SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         ois.defaultReadObject(); // lê os campos normais
         int size = ois.readInt(); // lê o tamanho
 
+        int arraySize = HashTable.nextPrime((int) (size / IDEAL_LOAD_FACTOR));
+        table = (MapSinglyList<K, V>[]) new MapSinglyList[arraySize];
+        for (int i = 0; i < arraySize; i++)
+            table[i] = new MapSinglyList<>();
+        maxSize = (int)(arraySize * MAX_LOAD_FACTOR);
+        currentSize = 0;
+
+        for ( int i = 0; i < table.length; i++) {
+            Entry<K, V> entry = (Entry<K, V>) ois.readObject();
+            K key = entry.key();
+            V value = entry.value();
+            int index = hash(key);
+            table[index].put(key, value);
+            currentSize++;
+
+        }
+    }*/
+    @SuppressWarnings("unchecked")
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject();
+        int size = ois.readInt();
+
+        int arraySize = HashTable.nextPrime((int) (size / IDEAL_LOAD_FACTOR));
+        table = (MapSinglyList<K, V>[]) new MapSinglyList[arraySize];
+        for (int i = 0; i < arraySize; i++)
+            table[i] = new MapSinglyList<>();
+        maxSize = (int)(arraySize * MAX_LOAD_FACTOR);
+        currentSize = 0;
+
+        for (int i = 0; i < size; i++) {
+            Entry<K, V> entry = (Entry<K, V>) ois.readObject();
+            K key = entry.key();
+            V value = entry.value();
+
+            int index = hash(key);
+            table[index].put(key, value);
+            currentSize++;
+        }
     }
+
 
     // Returns the hash value of the specified key.
     protected int hash( K key ){

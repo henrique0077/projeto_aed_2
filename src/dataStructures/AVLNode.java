@@ -1,4 +1,7 @@
 package dataStructures;
+
+import java.io.Serializable;
+
 /**
  * AVL Tree Node
  * @author AED  Team
@@ -7,7 +10,7 @@ package dataStructures;
  */
 class AVLNode<E> extends BTNode<E> {
     // Height of the node
-    protected int height;
+    protected int height; // era protected
 
     public AVLNode(E elem) {
         super(elem);
