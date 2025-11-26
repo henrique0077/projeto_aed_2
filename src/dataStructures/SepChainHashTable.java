@@ -49,13 +49,13 @@ private void writeObject(ObjectOutputStream oos) throws IOException {
     oos.defaultWriteObject();
     oos.writeInt(currentSize);
 
-    int count = 0;
+    //int count = 0;
     for(Map<K,V> bucket : table) {
         Iterator<Entry<K,V>> it = bucket.iterator();
         while(it.hasNext()) {
             Entry<K,V> entry = it.next();
             oos.writeObject(entry);
-            count++;
+            //count++;
         }
     }
     oos.flush();

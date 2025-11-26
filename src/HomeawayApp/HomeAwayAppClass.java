@@ -355,7 +355,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
 
     @Override
     public String  getStudentName(String name) {
-        return studentCollection.getElement(name).getName();
+        return studentCollection.getElement(name.toUpperCase()).getName(); //meti to uppercase
     }
 
     @Override

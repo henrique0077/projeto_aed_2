@@ -45,11 +45,11 @@ public class DoublyLinkedList<E> implements TwoWayList<E>, Serializable {
         oos.writeInt(currentSize);
 
         DoublyListNode<E> node = head;
-        int count = 0;
+        //int count = 0;
         while(node != null) {
             oos.writeObject(node.getElement());
             node = node.getNext();
-            count++;
+            //count++;
         }
         oos.flush();
     }
