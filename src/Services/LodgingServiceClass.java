@@ -9,13 +9,16 @@ import Enumerators.ServiceType;
 import Students.Student;
 import dataStructures.DoublyLinkedList;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 public class LodgingServiceClass extends AbstractService implements EatingLodging, Serializable {
 
     int fullCapacity;
     int capacity;
-    private final DoublyLinkedList<Student> clientsList;
+    private transient DoublyLinkedList<Student> clientsList;
 
 
     public LodgingServiceClass(String name, long lat, long lon, int price, int value, int updateCount){
@@ -51,6 +54,15 @@ public class LodgingServiceClass extends AbstractService implements EatingLodgin
         clientsList.addLast(client);
         //todo array com os bacanos
     }
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+    }
+
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject();
+        clientsList = new DoublyLinkedList<>();
+    }
+
 
     public void removeClient(Student client) {
         this.capacity ++;

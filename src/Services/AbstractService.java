@@ -12,6 +12,9 @@ import dataStructures.*;
 import dataStructures.TwoWayList;
 import dataStructures.Iterator;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 public abstract class AbstractService implements Service, Serializable {
@@ -37,6 +40,16 @@ public abstract class AbstractService implements Service, Serializable {
         lastUpdatedOrder = updateCount;
         descriptions = new DoublyLinkedList<>();
     }
+
+    // Se não tens writeObject, ADICIONA:
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+    }
+
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject();
+    }
+
 
     @Override
     public int getServicePrice(){

@@ -39,9 +39,46 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
 
         for (int i = 0; i < size; i++) {
             Entry<K, V> entry = (Entry<K, V>) ois.readObject();
-            this.put(entry.key(), entry.value());
+            // Insere sem rebalancear durante desserialização
+            root = putNodeWithoutRebalance((AVLNode<Entry<K, V>>) root, entry.key(), entry.value(), null);
+            currentSize++;
+        }
+
+        // Rebalanceia a árvore uma única vez depois de todos os elementos
+        if (root != null) {
+            rebalanceTree();
         }
     }
+
+    private AVLNode<Entry<K, V>> putNodeWithoutRebalance(AVLNode<Entry<K, V>> node, K key, V value, AVLNode<Entry<K, V>> parent) {
+        if (node == null) {
+            return new AVLNode<>(new Entry<>(key, value), parent);
+        }
+
+        int comparison = key.compareTo(node.getElement().key());
+
+        if (comparison == 0) {
+            node.setElement(new Entry<>(key, value));
+        }
+        else if (comparison < 0) {
+            AVLNode<Entry<K, V>> leftChild = (AVLNode<Entry<K, V>>) node.getLeftChild();
+            node.setLeftChild(putNodeWithoutRebalance(leftChild, key, value, node));
+        }
+        else {
+            AVLNode<Entry<K, V>> rightChild = (AVLNode<Entry<K, V>>) node.getRightChild();
+            node.setRightChild(putNodeWithoutRebalance(rightChild, key, value, node));
+        }
+
+        node.updateHeight();
+        return node;  // ✅ SEM rebalancear!
+    }
+
+    private void rebalanceTree() {
+        if (root != null) {
+            root = rebalanceFromNode((AVLNode<Entry<K, V>>) root);
+        }
+    }
+
 
     /**
      * 

@@ -41,15 +41,19 @@ public class DoublyLinkedList<E> implements TwoWayList<E>, Serializable {
     }
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
-        oos.defaultWriteObject(); // escreve os campos normais (não temos aqui, mas é boa prática)
-        oos.writeInt(currentSize); // escreve o tamanho
-        DoublyListNode<E> node = head; // o <E> é novo
-        while (node != null) {
-            oos.writeObject(node.getElement()); // escreve cada elemento
+        oos.defaultWriteObject();
+        oos.writeInt(currentSize);
+
+        DoublyListNode<E> node = head;
+        int count = 0;
+        while(node != null) {
+            oos.writeObject(node.getElement());
             node = node.getNext();
+            count++;
         }
         oos.flush();
     }
+
 
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         ois.defaultReadObject(); // lê os campos normais

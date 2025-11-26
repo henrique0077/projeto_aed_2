@@ -45,18 +45,22 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> implements Serializab
         oos.flush();
     }*/
 
-    private void writeObject(ObjectOutputStream oos) throws IOException {
-        oos.defaultWriteObject();
-        oos.writeInt(currentSize);
+private void writeObject(ObjectOutputStream oos) throws IOException {
+    oos.defaultWriteObject();
+    oos.writeInt(currentSize);
 
-        for (Map<K,V> bucket : table) {
-            Iterator<Entry<K,V>> it = bucket.iterator();
-            while (it.hasNext()) {
-                oos.writeObject(it.next());
-            }
+    int count = 0;
+    for(Map<K,V> bucket : table) {
+        Iterator<Entry<K,V>> it = bucket.iterator();
+        while(it.hasNext()) {
+            Entry<K,V> entry = it.next();
+            oos.writeObject(entry);
+            count++;
         }
-        oos.flush();
     }
+    oos.flush();
+}
+
 
     /**@SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {

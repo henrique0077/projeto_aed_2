@@ -13,7 +13,6 @@ import dataStructures.exceptions.InvalidPositionException;
 import exceptions.*;
 
 import java.io.*;
-import java.sql.SQLOutput;
 
 public class HomeAwayAppClass implements HomeAwayApp, Serializable {
 
@@ -67,7 +66,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
         }
     }
 
-
+    @Override
     public void loadBounds(String areaName) throws BoundNameDoesntExistException, FileDoesNotExistsException {
         String fileName = areaName.toLowerCase().replace(" ", "_") + ".ser";
         File file = new File(fileName);
@@ -88,6 +87,7 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
             throw new RuntimeException(e);
         }
     }
+
 
     /**
      * Checks if the bound name already exists

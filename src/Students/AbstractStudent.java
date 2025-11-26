@@ -17,17 +17,24 @@ import dataStructures.ListInArray;
 import dataStructures.Iterator;
 import dataStructures.TwoWayDoublyIterator;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 
-abstract class AbstractStudent implements Student, Serializable {
+public abstract class AbstractStudent implements Student, Serializable {
 
     private final String name;
     private final String country;
     private final StudentType type;
-    private Service currentLocation;
-    private Service home;
-    protected List<Service> visitedLocations;
+
+    private transient Service currentLocation;
+    private transient Service home;
+    protected transient List<Service> visitedLocations;
+//    private Service currentLocation;
+//    private Service home;
+//    protected List<Service> visitedLocations;
     protected int counterLocations;
     private final int DEFAULT_DIMENTION = 1;
 
@@ -40,6 +47,20 @@ abstract class AbstractStudent implements Student, Serializable {
         this.visitedLocations = new ListInArray<>(DEFAULT_DIMENTION); //será que pode ser 0?
         counterLocations = 0;
     }
+
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+        // Services são transient, não são serializados
+    }
+
+    // ✅ NOVO - Deserialização personalizada
+    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+        ois.defaultReadObject();
+        visitedLocations = new ListInArray<>(DEFAULT_DIMENTION);
+        // currentLocation e home serão null - serão repopulados depois
+    }
+
+
 
     public String getCountry (){
         return this.country;
@@ -56,11 +77,26 @@ abstract class AbstractStudent implements Student, Serializable {
     }
     @Override
     public String getCurrentLocation() {
+        if (currentLocation == null) {
+            return "Unknown";
+        }
         return currentLocation.getName();
     }
+
     @Override
     public String getHome() {
+        if (home == null) {
+            return "Unknown";
+        }
         return home.getName();
+    }
+
+    public void setCurrentLocation(Service location) {
+        this.currentLocation = location;
+    }
+
+    public void setHome(Service home) {
+        this.home = home;
     }
 
     public void changeCapacityOfTheLodging(Student studentName) {
