@@ -59,4 +59,6 @@ public interface StudentCollection {
     Iterator<Student> allStudentIterator();
 
     Iterator<Student> byCountryIterator(String country);
+
+    boolean areThereStudentsFromCountry(String country);
 }

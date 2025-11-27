@@ -37,13 +37,4 @@ public class LeisureServiceClass extends AbstractService implements Serializable
         return 0;
     }
 
-    // ✅ NOVO - Serialização personalizada
-    private void writeObject(ObjectOutputStream oos) throws IOException {
-        oos.defaultWriteObject();
-    }
-
-    // ✅ NOVO - Deserialização personalizada
-    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        ois.defaultReadObject();
-    }
 }

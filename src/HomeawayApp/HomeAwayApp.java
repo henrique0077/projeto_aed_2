@@ -108,7 +108,7 @@ public interface HomeAwayApp {
       * Check if there are students in the program
       * @return <code>true</code> if StudentCollection isn't empty, false otherwise
       */
-     boolean isThereStudents();
+     boolean isThereNoStudents();
 
      /**
       * Checks if it's worthy for a thrifty student to move into another service
@@ -262,4 +262,6 @@ public interface HomeAwayApp {
     int getServiceCapacity(String service);
 
     boolean hasClientsInTheService(String service);
+
+    boolean isThereNoStudentsFromCountry(String country);
 }

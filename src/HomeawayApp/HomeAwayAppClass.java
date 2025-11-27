@@ -71,15 +71,15 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
         String fileName = areaName.toLowerCase().replace(" ", "_") + ".ser";
         File file = new File(fileName);
         if (!file.exists()) throw new BoundNameDoesntExistException();
-
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
             this.currentBound = (Bound) ois.readObject();
             this.servicesCollection = (ServicesCollection) ois.readObject();
             this.studentCollection = (StudentCollection) ois.readObject();
-//            Iterator<Service> s = servicesCollection.allServiceIterator();
+
+//            Iterator<Student> s = studentCollection.allStudentIterator();
 //            while (s.hasNext()) {
-//                Service service = (Service) s.next();
-//                System.out.printf("type: %s, name: %s\n",service.getServiceType(), service.getName());
+//                Student service = s.next();
+//                System.out.printf("type: %s, name: %s\n",service.getHome(), service.getName(), service.getType(), service.getCurrentLocation());
 //            }
         } catch (IOException e) {
             throw new FileDoesNotExistsException();
@@ -150,8 +150,8 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
     }
 
     @Override
-    public boolean isThereStudents() {
-        return !studentCollection.isEmpty();
+    public boolean isThereNoStudents() {
+        return studentCollection.isEmpty();
     }
 
     @Override
@@ -534,6 +534,10 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
 
     public Iterator<Service> getServicesWithTagIterator(String tag){
         return servicesCollection.getServicesWithTag(tag);
+    }
+
+    public boolean isThereNoStudentsFromCountry (String country) {
+        return studentCollection.areThereStudentsFromCountry(country);
     }
 
 //    public boolean hasCapacity (String serviceName) {

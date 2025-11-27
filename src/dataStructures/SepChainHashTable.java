@@ -45,62 +45,42 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> implements Serializab
         oos.flush();
     }*/
 
-private void writeObject(ObjectOutputStream oos) throws IOException {
-    oos.defaultWriteObject();
-    oos.writeInt(currentSize);
-
-    //int count = 0;
-    for(Map<K,V> bucket : table) {
-        Iterator<Entry<K,V>> it = bucket.iterator();
-        while(it.hasNext()) {
-            Entry<K,V> entry = it.next();
-            oos.writeObject(entry);
-            //count++;
+    /**
+     * Serializa o estado da Hash Table.
+     * Salva a capacidade do array, o número de elementos e os pares chave-valor individualmente.
+     */
+    private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
+        oos.writeInt(table.length);
+        oos.writeInt(currentSize);
+        for(Map<K,V> bucket : table) {
+            Iterator<Entry<K,V>> it = bucket.iterator();
+            while(it.hasNext()) {
+                Entry<K,V> entry = it.next();
+                oos.writeObject(entry.key());   // Serializa apenas a Chave
+                oos.writeObject(entry.value()); // Serializa apenas o Valor
+            }
         }
+        oos.flush();
     }
-    oos.flush();
-}
 
-
-    /**@SuppressWarnings("unchecked")
-    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        ois.defaultReadObject(); // lê os campos normais
-        int size = ois.readInt(); // lê o tamanho
-
-        int arraySize = HashTable.nextPrime((int) (size / IDEAL_LOAD_FACTOR));
-        table = (MapSinglyList<K, V>[]) new MapSinglyList[arraySize];
-        for (int i = 0; i < arraySize; i++)
-            table[i] = new MapSinglyList<>();
-        maxSize = (int)(arraySize * MAX_LOAD_FACTOR);
-        currentSize = 0;
-
-        for ( int i = 0; i < table.length; i++) {
-            Entry<K, V> entry = (Entry<K, V>) ois.readObject();
-            K key = entry.key();
-            V value = entry.value();
-            int index = hash(key);
-            table[index].put(key, value);
-            currentSize++;
-
-        }
-    }*/
+    /**
+     * Reconstrói a Hash Table a partir do stream.
+     */
     @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         ois.defaultReadObject();
-        int size = ois.readInt();
-
-        int arraySize = HashTable.nextPrime((int) (size / IDEAL_LOAD_FACTOR));
-        table = (MapSinglyList<K, V>[]) new MapSinglyList[arraySize];
-        for (int i = 0; i < arraySize; i++)
+        int savedCapacity = ois.readInt();
+        int savedSize = ois.readInt();
+        table = (MapSinglyList<K, V>[]) new MapSinglyList[savedCapacity];
+        for (int i = 0; i < savedCapacity; i++) {
             table[i] = new MapSinglyList<>();
-        maxSize = (int)(arraySize * MAX_LOAD_FACTOR);
+        }
+        maxSize = (int)(savedCapacity * MAX_LOAD_FACTOR);
         currentSize = 0;
-
-        for (int i = 0; i < size; i++) {
-            Entry<K, V> entry = (Entry<K, V>) ois.readObject();
-            K key = entry.key();
-            V value = entry.value();
-
+        for (int i = 0; i < savedSize; i++) {
+            K key = (K) ois.readObject();     // Lê a Chave
+            V value = (V) ois.readObject();   // Lê o Valor
             int index = hash(key);
             table[index].put(key, value);
             currentSize++;
@@ -185,34 +165,6 @@ private void writeObject(ObjectOutputStream oos) throws IOException {
      * @return previous value associated with key,
      * or null if the dictionary does not an entry with that key
      */
-//    public V remove(K key) {
-//        int index = hash(key);
-//        V aux = get(key);
-//        if (aux != null) {
-//            Map<K,V> bucket = table[index];
-//            bucket.remove(key);
-//            return aux;
-//        }
-//        return null;
-//    }
-    /**public V remove(K key) {
-     int index = hash(key);
-     Map<K, V> bucket = table[index];
-
-     // Primeiro verificar se a chave existe no bucket
-     Iterator<Entry<K, V>> it = bucket.iterator();
-     while (it.hasNext()) {
-     Entry<K, V> entry = it.next();
-     if (entry.key().equals(key)) {
-     // Chave encontrada - remover e retornar valor
-     V oldValue = entry.value();
-     bucket.remove(key); // ou it.remove() se for seguro
-     currentSize--;
-     return oldValue;
-     }
-     }
-     return null;
-     }*/
     public V remove(K key) {
         int index = hash(key);
         V oldValue = table[index].remove(key);

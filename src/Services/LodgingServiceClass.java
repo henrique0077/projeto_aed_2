@@ -18,7 +18,7 @@ public class LodgingServiceClass extends AbstractService implements EatingLodgin
 
     int fullCapacity;
     int capacity;
-    private transient DoublyLinkedList<Student> clientsList;
+    private DoublyLinkedList<Student> clientsList;
 
 
     public LodgingServiceClass(String name, long lat, long lon, int price, int value, int updateCount){

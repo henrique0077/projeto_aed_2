@@ -6,6 +6,8 @@
 package Students;
 
 import dataStructures.*;
+
+import javax.swing.plaf.PanelUI;
 import java.io.Serializable;
 
 public class StudentCollectionClass implements StudentCollection, Serializable {
@@ -84,7 +86,17 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
     }
 
     public Iterator<Student> byCountryIterator(String country){
-        return studentsByCountry.get(country.toUpperCase()).iterator();
+            List<Student> list = studentsByCountry.get(country.toUpperCase());
+            if (list == null)
+                return new DoublyLinkedList<Student>().iterator();
+            return list.iterator();
+    }
+
+    public boolean areThereStudentsFromCountry(String country){
+        List<Student> students = studentsByCountry.get(country.toUpperCase());
+        if (students == null)
+            return false;           
+        return !students.isEmpty();
     }
 
 

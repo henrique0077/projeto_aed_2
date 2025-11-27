@@ -70,7 +70,7 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
         }
 
         node.updateHeight();
-        return node;  // ✅ SEM rebalancear!
+        return node;
     }
 
     private void rebalanceTree() {

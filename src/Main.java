@@ -181,7 +181,7 @@ public class Main {
         } catch (BoundNameDoesntExistException e) {
             System.out.printf(e.getMessage(), boundName);
         } catch (FileDoesNotExistsException e) { //TODO o que por aqui???
-            System.out.println(e.getMessage());
+            System.out.printf(e.getMessage(), boundName);
         }
     }
 
@@ -279,12 +279,13 @@ public class Main {
     private static void studentsCommand(Scanner in, HomeAwayAppClass systemApp) {
         String argument = in.nextLine().trim();
         Iterator<Student> it = systemApp.getUserIterator(argument);
-        if (!systemApp.isThereStudents()){
+        if (systemApp.isThereNoStudents()){
             if (argument.equalsIgnoreCase(Message.ALL.get()))
                 System.out.println(Message.NO_STUDENTS_YET.get());
             else
                 System.out.printf(Message.NO_STUDENTS_FROM.get(), argument);
-        }else if (!it.hasNext()) {
+        }
+        else if (!it.hasNext()) {
             System.out.printf(Message.NO_STUDENTS_FROM.get(), argument);
         }
         while (it.hasNext()) {

@@ -29,12 +29,9 @@ public abstract class AbstractStudent implements Student, Serializable {
     private final String country;
     private final StudentType type;
 
-    private transient Service currentLocation;
-    private transient Service home;
-    protected transient List<Service> visitedLocations;
-//    private Service currentLocation;
-//    private Service home;
-//    protected List<Service> visitedLocations;
+    private Service currentLocation;
+    private Service home;
+    protected List<Service> visitedLocations;
     protected int counterLocations;
     private final int DEFAULT_DIMENTION = 1;
 
@@ -44,23 +41,9 @@ public abstract class AbstractStudent implements Student, Serializable {
         this.country = country;
         this.home = initialHome;
         this.currentLocation = initialHome; // Starts at home
-        this.visitedLocations = new ListInArray<>(DEFAULT_DIMENTION); //será que pode ser 0?
+        this.visitedLocations = new ListInArray<>(DEFAULT_DIMENTION);
         counterLocations = 0;
     }
-
-    private void writeObject(ObjectOutputStream oos) throws IOException {
-        oos.defaultWriteObject();
-        // Services são transient, não são serializados
-    }
-
-    // ✅ NOVO - Deserialização personalizada
-    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-        ois.defaultReadObject();
-        visitedLocations = new ListInArray<>(DEFAULT_DIMENTION);
-        // currentLocation e home serão null - serão repopulados depois
-    }
-
-
 
     public String getCountry (){
         return this.country;
@@ -77,17 +60,11 @@ public abstract class AbstractStudent implements Student, Serializable {
     }
     @Override
     public String getCurrentLocation() {
-        if (currentLocation == null) {
-            return "Unknown";
-        }
         return currentLocation.getName();
     }
 
     @Override
     public String getHome() {
-        if (home == null) {
-            return "Unknown";
-        }
         return home.getName();
     }
 
