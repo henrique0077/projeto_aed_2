@@ -17,6 +17,27 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
 
     private void writeObject(ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject();
+
+        int actualSize = 0;
+        Iterator<Entry<K,V>> counterIt = this.iterator();
+        while (counterIt.hasNext()) {
+            counterIt.next();
+            actualSize++;
+        }
+        oos.writeInt(actualSize);
+
+        if (actualSize > 0) {
+            Iterator<Entry<K,V>> iterator = this.iterator();
+            while (iterator.hasNext()) {
+                oos.writeObject(iterator.next());
+            }
+        }
+        oos.flush();
+    }
+
+    /*
+     *private void writeObject(ObjectOutputStream oos) throws IOException {
+        oos.defaultWriteObject();
         oos.writeInt(currentSize);
 
         if (currentSize > 0) {
@@ -27,6 +48,7 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
         }
         oos.flush();
     }
+     */
 
     @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
@@ -39,12 +61,10 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
 
         for (int i = 0; i < size; i++) {
             Entry<K, V> entry = (Entry<K, V>) ois.readObject();
-            // Insere sem rebalancear durante desserialização
             root = putNodeWithoutRebalance((AVLNode<Entry<K, V>>) root, entry.key(), entry.value(), null);
             currentSize++;
         }
 
-        // Rebalanceia a árvore uma única vez depois de todos os elementos
         if (root != null) {
             rebalanceTree();
         }

@@ -49,9 +49,25 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
         currentBound = new BoundClass(areaName, topLat, leftLon, bottomLat, rightLon);
     }
 
+//    public void saveCurrentBounds() throws SystemBoundsNotDefinedException {
+//        if (!getHasBounds()) throw new SystemBoundsNotDefinedException();
+//
+//        String fileName = getBoundName().toLowerCase().replace(" ", "_") + ".ser";
+//
+//        try {
+//            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(fileName));
+//            oos.writeObject(currentBound);
+//            oos.writeObject(servicesCollection);
+//            oos.writeObject(studentCollection);
+//            oos.flush();
+//            oos.close();
+//        } catch (IOException e) {
+//            System.out.println("Erro da escrita.");
+//        }
+//    }
+
     public void saveCurrentBounds() throws SystemBoundsNotDefinedException {
         if (!getHasBounds()) throw new SystemBoundsNotDefinedException();
-
         String fileName = getBoundName().toLowerCase().replace(" ", "_") + ".ser";
 
         try {
@@ -66,28 +82,46 @@ public class HomeAwayAppClass implements HomeAwayApp, Serializable {
         }
     }
 
-    @Override
-    public void loadBounds(String areaName) throws BoundNameDoesntExistException, FileDoesNotExistsException {
-        String fileName = areaName.toLowerCase().replace(" ", "_") + ".ser";
-        File file = new File(fileName);
-        if (!file.exists()) throw new BoundNameDoesntExistException();
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
-            this.currentBound = (Bound) ois.readObject();
-            this.servicesCollection = (ServicesCollection) ois.readObject();
-            this.studentCollection = (StudentCollection) ois.readObject();
+//    @Override
+//    public void loadBounds(String areaName) throws BoundNameDoesntExistException, FileDoesNotExistsException {
+//        String fileName = areaName.toLowerCase().replace(" ", "_") + ".ser";
+//        File file = new File(fileName);
+//        if (!file.exists()) throw new BoundNameDoesntExistException();
+//        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
+//            this.currentBound = (Bound) ois.readObject();
+//            this.servicesCollection = (ServicesCollection) ois.readObject();
+//            this.studentCollection = (StudentCollection) ois.readObject();
+//
+////            Iterator<Student> s = studentCollection.allStudentIterator();
+////            while (s.hasNext()) {
+////                Student service = s.next();
+////                System.out.printf("type: %s, name: %s\n",service.getHome(), service.getName(), service.getType(), service.getCurrentLocation());
+////            }
+//        } catch (IOException e) {
+//            throw new FileDoesNotExistsException();
+//        } catch (ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
-//            Iterator<Student> s = studentCollection.allStudentIterator();
-//            while (s.hasNext()) {
-//                Student service = s.next();
-//                System.out.printf("type: %s, name: %s\n",service.getHome(), service.getName(), service.getType(), service.getCurrentLocation());
-//            }
-        } catch (IOException e) {
-            throw new FileDoesNotExistsException();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+@Override
+public void loadBounds(String areaName) throws BoundNameDoesntExistException, FileDoesNotExistsException {
+    String fileName = areaName.toLowerCase().replace(" ", "_") + ".ser";
+
+    File file = new File(fileName);
+    if (!file.exists()) throw new BoundNameDoesntExistException();
+
+    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(fileName))) {
+        this.currentBound = (Bound) ois.readObject();
+        this.servicesCollection = (ServicesCollection) ois.readObject();
+        this.studentCollection = (StudentCollection) ois.readObject();
+    } catch (IOException e) {
+        e.printStackTrace();
+        throw new FileDoesNotExistsException();
+    } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
     }
-
+}
 
     /**
      * Checks if the bound name already exists

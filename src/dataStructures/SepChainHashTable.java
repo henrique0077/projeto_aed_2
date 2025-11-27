@@ -57,8 +57,8 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> implements Serializab
             Iterator<Entry<K,V>> it = bucket.iterator();
             while(it.hasNext()) {
                 Entry<K,V> entry = it.next();
-                oos.writeObject(entry.key());   // Serializa apenas a Chave
-                oos.writeObject(entry.value()); // Serializa apenas o Valor
+                oos.writeObject(entry.key());
+                oos.writeObject(entry.value());
             }
         }
         oos.flush();
@@ -70,6 +70,7 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> implements Serializab
     @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         ois.defaultReadObject();
+
         int savedCapacity = ois.readInt();
         int savedSize = ois.readInt();
         table = (MapSinglyList<K, V>[]) new MapSinglyList[savedCapacity];
