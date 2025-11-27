@@ -49,10 +49,29 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> implements Serializab
      * Serializa o estado da Hash Table.
      * Salva a capacidade do array, o número de elementos e os pares chave-valor individualmente.
      */
+    /**
+     * Serializa o estado da Hash Table.
+     * CONTA os elementos manualmente para garantir que o ficheiro não fica corrompido.
+     */
     private void writeObject(ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject();
         oos.writeInt(table.length);
-        oos.writeInt(currentSize);
+
+        // --- CORREÇÃO: Calcular o tamanho REAL ---
+        // Se não fizeres isto, o bug do currentSize vai sempre perder alunos!
+        int actualSize = 0;
+        for (Map<K, V> bucket : table) {
+            Iterator<Entry<K, V>> it = bucket.iterator();
+            while (it.hasNext()) {
+                it.next();
+                actualSize++;
+            }
+        }
+
+        // Gravar o tamanho real que contámos agora
+        oos.writeInt(actualSize);
+
+        // Gravar os elementos
         for(Map<K,V> bucket : table) {
             Iterator<Entry<K,V>> it = bucket.iterator();
             while(it.hasNext()) {
