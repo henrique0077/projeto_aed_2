@@ -53,31 +53,38 @@ public class SepChainHashTable<K,V> extends HashTable<K,V> implements Serializab
      * Serializa o estado da Hash Table.
      * CONTA os elementos manualmente para garantir que o ficheiro não fica corrompido.
      */
+    /**
+     * Serializa o estado da Hash Table.
+     * CORREÇÃO: Conta os elementos reais para evitar o bug do currentSize errado.
+     */
     private void writeObject(ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject();
         oos.writeInt(table.length);
 
-        // --- CORREÇÃO: Calcular o tamanho REAL ---
-        // Se não fizeres isto, o bug do currentSize vai sempre perder alunos!
+        // 1. Contar quantos elementos existem REALMENTE na tabela
         int actualSize = 0;
         for (Map<K, V> bucket : table) {
-            Iterator<Entry<K, V>> it = bucket.iterator();
-            while (it.hasNext()) {
-                it.next();
-                actualSize++;
+            if (bucket != null) {
+                Iterator<Entry<K, V>> it = bucket.iterator();
+                while (it.hasNext()) {
+                    it.next();
+                    actualSize++;
+                }
             }
         }
 
-        // Gravar o tamanho real que contámos agora
+        // 2. Gravar o tamanho real (Isto resolve o problema dos alunos "desaparecidos")
         oos.writeInt(actualSize);
 
-        // Gravar os elementos
+        // 3. Gravar os elementos
         for(Map<K,V> bucket : table) {
-            Iterator<Entry<K,V>> it = bucket.iterator();
-            while(it.hasNext()) {
-                Entry<K,V> entry = it.next();
-                oos.writeObject(entry.key());
-                oos.writeObject(entry.value());
+            if (bucket != null) {
+                Iterator<Entry<K,V>> it = bucket.iterator();
+                while(it.hasNext()) {
+                    Entry<K,V> entry = it.next();
+                    oos.writeObject(entry.key());
+                    oos.writeObject(entry.value());
+                }
             }
         }
         oos.flush();
