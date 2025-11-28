@@ -88,14 +88,16 @@ public abstract class AbstractStudent implements Student, Serializable {
 
     @Override
     public void moveHome(Service lodgingService, Student studentName) {
-        if (currentLocation instanceof LodgingServiceClass lodging) {
-                lodging.removeClient(studentName);
+        if (this.home instanceof LodgingServiceClass lodging) {
+            lodging.removeClient(studentName);
         }
+
         this.home = lodgingService;
         this.currentLocation = lodgingService; // Estudante vai para casa após mover
         addVisitedLocation(lodgingService);
+
         if (this.currentLocation instanceof LodgingServiceClass lodging) {
-                lodging.addClient(studentName);
+            lodging.addClient(studentName);
         }
     }
 

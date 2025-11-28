@@ -144,24 +144,26 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
     private AVLNode<Entry<K, V>> rebalanceFromNode(AVLNode<Entry<K, V>> node) {
         int balance = node.getBalance();
 
-        if (balance > 1) {
+        if (balance > 1) { // Left heavy
             AVLNode<Entry<K, V>> leftChild = (AVLNode<Entry<K, V>>) node.getLeftChild();
             AVLNode<Entry<K, V>> x;
-            if (leftChild.getBalance() < 0) {
+            if (leftChild.getBalance() < 0) { // LR Case
                 x = (AVLNode<Entry<K, V>>) leftChild.getRightChild();
-            } else {
-                x = leftChild;
+            } else { // LL Case
+                // CORREÇÃO: x tem de ser o neto (filho esquerdo do filho esquerdo)
+                x = (AVLNode<Entry<K, V>>) leftChild.getLeftChild();
             }
             return (AVLNode<Entry<K, V>>) restructure(x);
         }
 
-        if (balance < -1) {
+        if (balance < -1) { // Right heavy
             AVLNode<Entry<K, V>> rightChild = (AVLNode<Entry<K, V>>) node.getRightChild();
             AVLNode<Entry<K, V>> x;
-            if (rightChild.getBalance() > 0) {
+            if (rightChild.getBalance() > 0) { // RL Case
                 x = (AVLNode<Entry<K, V>>) rightChild.getLeftChild();
-            } else {
-                x = rightChild;
+            } else { // RR Case
+                // CORREÇÃO: x tem de ser o neto (filho direito do filho direito)
+                x = (AVLNode<Entry<K, V>>) rightChild.getRightChild();
             }
             return (AVLNode<Entry<K, V>>) restructure(x);
         }
@@ -177,15 +179,16 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
      * @param key whose entry is to be removed from the map
      * @return
      */
+    @Override
     public V remove(K key) {
         AVLNode<Entry<K,V>> nodeToRemove = getNode((AVLNode<Entry<K,V>>)root,key);
-        if (nodeToRemove==null) {
+        if (nodeToRemove == null) {
             return null;
         }
-        V value =  nodeToRemove.getElement().value();
+        V value = nodeToRemove.getElement().value();
         AVLNode<Entry<K,V>> parentToRebalance;
 
-        if (nodeToRemove.getLeftChild()!=null && nodeToRemove.getRightChild()!=null) {
+        if (nodeToRemove.getLeftChild() != null && nodeToRemove.getRightChild() != null) {
             parentToRebalance = removeNodeWithTwoChildren(nodeToRemove);
         }
         else if (nodeToRemove.isLeaf()) {
@@ -199,10 +202,11 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
 
         currentSize--;
 
-        if (parentToRebalance != null) {
+        // RE-EQUILIBRAR ATÉ À RAIZ (Obrigatório)
+        while (parentToRebalance != null) {
+            parentToRebalance.updateHeight();
             rebalanceFromNode(parentToRebalance);
-        } else if (root != null) {
-            rebalanceFromNode((AVLNode<Entry<K,V>>) root);
+            parentToRebalance = (AVLNode<Entry<K,V>>) parentToRebalance.getParent();
         }
 
         return value;
@@ -228,6 +232,7 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
         } else {
             child = (AVLNode<Entry<K, V>>) node.getRightChild();
         }
+
         if (node.isRoot()) {
             root = child;
             if (child != null) {
@@ -241,6 +246,10 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
             }
             else {
                 parent.setRightChild(child);
+            }
+            // FIX: Ligar o filho ao novo pai
+            if (child != null) {
+                child.setParent(parent);
             }
         }
     }

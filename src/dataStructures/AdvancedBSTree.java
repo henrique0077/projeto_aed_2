@@ -17,41 +17,36 @@ abstract class AdvancedBSTree <K extends Comparable<K>,V> extends BSTSortedMap<K
  	* @param z - root of the rotation
 	 * @pre: z has a right child
  	*/
-	protected void rotateLeft( BTNode<Entry<K,V>> z) {
-        BTNode<Entry<K, V>> theParent = (BTNode<Entry<K, V>>) z.getParent();
-        BTNode<Entry<K, V>> y = (BTNode<Entry<K, V>>) z.getRightChild();
-        BTNode<Entry<K, V>> newZRightChild = (BTNode<Entry<K, V>>) y.getLeftChild();
+      protected void rotateLeft( BTNode<Entry<K,V>> z) {
+          BTNode<Entry<K, V>> theParent = (BTNode<Entry<K, V>>) z.getParent();
+          BTNode<Entry<K, V>> y = (BTNode<Entry<K, V>>) z.getRightChild();
+          BTNode<Entry<K, V>> newZRightChild = (BTNode<Entry<K, V>>) y.getLeftChild();
 
-        z.setRightChild(newZRightChild);
-        if (newZRightChild != null)
-            newZRightChild.setParent(z);
-        y.setLeftChild(z);
+          z.setRightChild(newZRightChild);
+          if (newZRightChild != null)
+              newZRightChild.setParent(z);
+          y.setLeftChild(z);
 
-        y.setParent(theParent);
+          y.setParent(theParent);
 
-        if (theParent != null) {
-            int value = findHasParent(z);
-            if (value == 0) {
-                theParent.setLeftChild(y);
-            } else if (value == 1) {
-                theParent.setRightChild(y);
-            }
-        } else {
-            this.root = y;
-        }
+          if (theParent != null) {
+              int value = findHasParent(z);
+              if (value == 0) {
+                  theParent.setLeftChild(y);
+              } else if (value == 1) {
+                  theParent.setRightChild(y);
+              }
+          } else {
+              this.root = y;
+          }
 
-   	 //TODO: Left as an exercise.
-   	 //  a single rotation modifies a constant number of parent-child relationships,
-    	// it can be implemented in O(1)time
-	}
+          z.setParent(y); // Fix dos ponteiros
 
-     /**
-     * Performs a single right rotation rooted at z node.
-     * Node y was a left  child  of z before the  rotation,
-     * then z becomes the right child of y after the rotation.
-     * @param z - root of the rotation
-     * @pre: z has a left child
-     */
+          // Fix das alturas (Obrigatório para AVL)
+          if (z instanceof AVLNode) ((AVLNode<Entry<K,V>>) z).updateHeight();
+          if (y instanceof AVLNode) ((AVLNode<Entry<K,V>>) y).updateHeight();
+      }
+
     protected void rotateRight( BTNode<Entry<K,V>> z){
         BTNode<Entry<K, V>> theParent = (BTNode<Entry<K, V>>) z.getParent();
         BTNode<Entry<K, V>> y = (BTNode<Entry<K, V>>) z.getLeftChild();
@@ -75,9 +70,11 @@ abstract class AdvancedBSTree <K extends Comparable<K>,V> extends BSTSortedMap<K
             this.root = y;
         }
 
-        //TODO: Left as an exercise.
-        //  a single rotation modifies a constant number of parent-child relationships,
-        // it can be implemented in O(1)time
+        z.setParent(y); // Fix dos ponteiros
+
+        // Fix das alturas (Obrigatório para AVL)
+        if (z instanceof AVLNode) ((AVLNode<Entry<K,V>>) z).updateHeight();
+        if (y instanceof AVLNode) ((AVLNode<Entry<K,V>>) y).updateHeight();
     }
 
     /**

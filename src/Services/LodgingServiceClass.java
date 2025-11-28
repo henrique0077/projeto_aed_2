@@ -65,8 +65,11 @@ public class LodgingServiceClass extends AbstractService implements EatingLodgin
 
 
     public void removeClient(Student client) {
-        this.capacity ++;
-        clientsList.remove(clientsList.indexOf(client));
+        int index = clientsList.indexOf(client);
+        if (index != -1) {
+            clientsList.remove(index);
+            this.capacity++; // Só aumenta a capacidade se removeu com sucesso
+        }
         //Todo array com os bacanos
     }
 
