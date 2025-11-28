@@ -425,8 +425,10 @@ public class Main {
         try {
             systemApp.star(rating, service, description);
             System.out.println(Message.HAS_BEEN_REGISTERED);
-        } catch (InvalidRatingException | ServiceDoesntExistException e) {
-            System.out.println(e.getMessage());
+        } catch (InvalidRatingException e1) {
+            System.out.println(e1.getMessage());
+        } catch (ServiceDoesntExistException e) {
+            System.out.printf(Message.SERVICE_DOES_NOT_EXIST.get(), service);
         }
     }
 

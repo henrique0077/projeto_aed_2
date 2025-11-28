@@ -382,10 +382,15 @@ public void loadBounds(String areaName) throws BoundNameDoesntExistException, Fi
     public void star(int rating, String serviceName, String description) throws InvalidRatingException, ServiceDoesntExistException {
         if (rating < 1 || rating > 5)
             throw new InvalidRatingException();
-        if (!isValidServiceName(serviceName))
+
+        // CORREÇÃO: Remover o '!'
+        // isValidServiceName devolve true se o nome estiver livre (serviço não existe)
+        if (isValidServiceName(serviceName))
             throw new ServiceDoesntExistException();
+
         Service service = servicesCollection.getElement(serviceName);
         service.addDescription(description);
+
         int oldUpdateCounter = service.getLastUpdatedOrder();
         int oldStars = service.getAverageStars();
         // Increment FIRST, then pass to addRating

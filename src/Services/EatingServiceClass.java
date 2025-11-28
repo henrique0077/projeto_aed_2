@@ -67,7 +67,7 @@ public class EatingServiceClass extends AbstractService implements EatingLodging
 
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         ois.defaultReadObject();
-        clientsList = new DoublyLinkedList<>();
+    //    clientsList = new DoublyLinkedList<>();
     }
 
     public DoublyLinkedList<Student> getClientsList() {

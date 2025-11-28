@@ -5,6 +5,7 @@
 
 package Students;
 
+import Enumerators.ServiceType;
 import Enumerators.StudentType;
 import Services.Service;
 
@@ -19,7 +20,7 @@ public class BookishStudent extends AbstractStudent implements Serializable {
     @Override
     public void addVisitedLocation(Service location) {
         // Only stores leisure locations (logic to check type belongs elsewhere)
-        if (location.getServiceType().get().equals("leisure") && searchIfLocationWasAlreadyVisited(location)) // Mudar esta var para um constante?
+        if (location.getServiceType() == ServiceType.LEISURE && searchIfLocationWasAlreadyVisited(location))
             visitedLocations.add(counterLocations++, location);
     }
 

@@ -60,7 +60,7 @@ public class LodgingServiceClass extends AbstractService implements EatingLodgin
 
     private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
         ois.defaultReadObject();
-        clientsList = new DoublyLinkedList<>();
+      //  clientsList = new DoublyLinkedList<>();
     }
 
 

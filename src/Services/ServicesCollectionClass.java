@@ -53,7 +53,12 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         String serviceName = elem.getName().toUpperCase();
         services.put(serviceName, elem);
         storeAndSortByType(elem);
-        servicesByRating.get(3).put(serviceName, elem);
+
+        // CORREÇÃO: Usar o rating real do serviço
+        int ratingIndex = elem.getAverageStars() - 1;
+        if (ratingIndex >= 0 && ratingIndex <= 4) {
+            servicesByRating.get(ratingIndex).put(serviceName, elem);
+        }
     }
 
     @Override
@@ -110,8 +115,19 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     }                   //isto já está feito lê só os comentários \_ ^_^ _/
 
     public void updateRating(String serviceName, int oldStars, int newStars) {
-        servicesByRating.get(oldStars).remove(serviceName);
-        servicesByRating.get(newStars).put(serviceName, services.get(serviceName));
+        String nameUpper = serviceName.toUpperCase();
+
+        // Remove do bucket antigo
+        if (oldStars >= 1 && oldStars <= 5)
+            servicesByRating.get(oldStars - 1).remove(nameUpper);
+
+        // Adiciona ao novo bucket
+        if (newStars >= 1 && newStars <= 5) {
+            Service s = services.get(nameUpper);
+            if (s != null) {
+                servicesByRating.get(newStars - 1).put(nameUpper, s);
+            }
+        }
     }
 
 
@@ -198,10 +214,17 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     @Override
     public Iterator<Service> allServiceIteratorSortedRating() {
         List<Service> allServicesByRating = new ListInArray<>(DEFAULT_DIMENTION);
-        for (int i = 0; i < 5; i++) {
-            Iterator<Service> it = servicesByRating.get(i).values();
-            while (it.hasNext())
-                allServicesByRating.addLast(it.next());     //o addLast já tem o ensureCapacity, logo não nos temos que preocupar com o resize
+
+        // Percorre a lista original (que tem a ordem de inserção)
+        // Filtra por rating decrescente (5 -> 1)
+        for (int r = 5; r >= 1; r--) {
+            Iterator<Service> it = servicesInOrder.iterator();
+            while (it.hasNext()) {
+                Service s = it.next();
+                if (s.getAverageStars() == r) {
+                    allServicesByRating.addLast(s);
+                }
+            }
         }
         return allServicesByRating.iterator();
     }
@@ -248,20 +271,31 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 //    }
 
     public Iterator<Service> serviceIteratorByType(String type, int rating, long lat, long lon) {
-        //if (type != null)
         Map<String, Service> allServices = new SepChainHashTable<>(DEFAULT_DIMENTION);
         Map<String, Service> typeMap = getServiceByType(type);
         Iterator<String> typeIterator = typeMap.keys();
-        Iterator<String> ratingIterator = servicesByRating.get(rating - 1).keys();
-        while (typeIterator.hasNext() && ratingIterator.hasNext()) {
-            String nextType = typeIterator.next();
-            String nextRating = ratingIterator.next();
-            if (nextType.equals(nextRating)) {
-                allServices.put(nextType, typeMap.get(nextType));
+        // Verificar bounds para rating
+        if (rating >= 1 && rating <= 5) {
+            Iterator<String> ratingIterator = servicesByRating.get(rating - 1).keys();
+            while (typeIterator.hasNext() && ratingIterator.hasNext()) {
+                String nextType = typeIterator.next();
+                String nextRating = ratingIterator.next();
+                // Nota: Esta lógica de intersecção parece depender da ordem dos iteradores,
+                // mas mantive a estrutura original. O ideal seria verificar contains.
+                // Abaixo está uma simplificação segura:
+            }
+            // Abordagem mais segura: iterar sobre o bucket de rating e verificar se o tipo corresponde
+            Iterator<Service> rateIt = servicesByRating.get(rating - 1).values();
+            while(rateIt.hasNext()){
+                Service s = rateIt.next();
+                if(s.getServiceType().toString().equals(type)){
+                    allServices.put(s.getName().toUpperCase(), s);
+                }
             }
         }
-        getNearest(lat, lon, allServices);
-        return allServices.values();
+
+        // CORREÇÃO: Retornar o iterador da LISTA ordenada, não os valores do mapa desordenado
+        return getNearest(lat, lon, allServices).iterator();
     }
 
     public Iterator<String> getDescriptions() {

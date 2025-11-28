@@ -109,28 +109,28 @@ public abstract class AbstractService implements Service, Serializable {
     }
 
     public Iterator<Student> clientsIterator(String order, Service service) {
-        List<Student> clients = new  ListInArray<>(DEFAULT_DIMENTION);
+        DoublyLinkedList<Student> clients = new DoublyLinkedList<>();
+        DoublyLinkedList<Student> sourceList = null;
+
         if (service instanceof EatingServiceClass eating) {
-                if (order.equals(">"))
-                    return eating.getClientsList().iterator();
-                else {
-                    for (int i = eating.getClientsList().size() - 1; i >= 0; i--) {
-                        clients.addLast(eating.getClientsList().get(i));
-                    }
-                }
+            sourceList = eating.getClientsList();
+        } else if (service instanceof LodgingServiceClass lodging) {
+            sourceList = lodging.getClientsList();
         }
-        else if (service instanceof LodgingServiceClass lodging) {
-                if (order.equals(">"))
-                    return lodging.getClientsList().iterator();
-                else {
-                    for (int i = lodging.getClientsList().size() - 1; i >= 0; i--) {
-                        clients.addLast(lodging.getClientsList().get(i));
-                    }
+
+        if (sourceList != null) {
+            if (order.equals(">")) {
+                return sourceList.iterator();
+            } else {
+                // Inversão eficiente O(N)
+                Iterator<Student> it = sourceList.iterator();
+                while (it.hasNext()) {
+                    clients.addFirst(it.next());
                 }
+            }
         }
         return clients.iterator();
     }
-
     public boolean checkCapacity(Service service){
         boolean result = false;
         if (service instanceof EatingServiceClass eating)

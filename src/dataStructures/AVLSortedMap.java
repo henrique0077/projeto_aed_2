@@ -171,9 +171,6 @@ public class AVLSortedMap <K extends Comparable<K>,V> extends AdvancedBSTree<K,V
         return node;
     }
 
-
-
-
     /**
      *
      * @param key whose entry is to be removed from the map

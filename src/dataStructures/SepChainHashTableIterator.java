@@ -65,15 +65,7 @@ class SepChainHashTableIterator<K,V> implements Iterator<Map.Entry<K,V>> {
     public void rewind() {
         currentBucket = -1;
         currentBucketIterator = null;
-        for (int i = 0; i < table.length; i++) {
-            if (table[i] != null) {
-                currentBucketIterator = table[i].iterator();
-                if (currentBucketIterator != null && currentBucketIterator.hasNext()) {
-                    currentBucket = i;
-                    break;
-                }
-            }
-        }
+        findNextBucket();
     }
 }
 
