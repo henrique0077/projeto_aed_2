@@ -107,7 +107,7 @@ public class Main {
     private static void isValidCommand(Scanner in, Commands comm) {
         switch (comm) {
             case SERVICES, LEAVE, STUDENTS,
-                 WHERE, VISITED, RANKING, RANKED, SAVE, LOAD , TAG-> {
+                 WHERE, VISITED, RANKING, RANKED, SAVE, LOAD, TAG -> {
                 in.nextLine();
                 System.out.println(Message.SYSTEM_BOUNDS_NOT_DEFINED);
             }
@@ -148,27 +148,29 @@ public class Main {
 
     }
 
-    /**private static void boundsCommand(Scanner in, HomeAwayAppClass systemApp) {
-        long topLat = in.nextLong();
-        long leftLon = in.nextLong();
-        long bottomLat = in.nextLong();
-        long rightLon = in.nextLong();
-        String areaName = in.nextLine().trim();
-        if (systemApp.checkBoundsNameIsValid(areaName)) {
-            if (systemApp.checkBoundsIsValid(topLat, leftLon, bottomLat, rightLon)) {
-                systemApp.createBounds(areaName, topLat, leftLon, bottomLat, rightLon);
-                System.out.printf(Message.BOUNDS_CREATED.get(), areaName);
-            }
-            System.out.println(Message.INVALID_BOUNDS.get());
-        }
-        System.out.println(Message.BOUND_ALREADY_EXISTS.get());
-    }*/
+    /**
+     * private static void boundsCommand(Scanner in, HomeAwayAppClass systemApp) {
+     * long topLat = in.nextLong();
+     * long leftLon = in.nextLong();
+     * long bottomLat = in.nextLong();
+     * long rightLon = in.nextLong();
+     * String areaName = in.nextLine().trim();
+     * if (systemApp.checkBoundsNameIsValid(areaName)) {
+     * if (systemApp.checkBoundsIsValid(topLat, leftLon, bottomLat, rightLon)) {
+     * systemApp.createBounds(areaName, topLat, leftLon, bottomLat, rightLon);
+     * System.out.printf(Message.BOUNDS_CREATED.get(), areaName);
+     * }
+     * System.out.println(Message.INVALID_BOUNDS.get());
+     * }
+     * System.out.println(Message.BOUND_ALREADY_EXISTS.get());
+     * }
+     */
 
     private static void saveBound(HomeAwayApp systemApp) {
-        try{
+        try {
             systemApp.saveCurrentBounds();
             System.out.printf(Message.BOUNDS_SAVED.get(), systemApp.getBoundName());
-        }catch (SystemBoundsNotDefinedException e) {
+        } catch (SystemBoundsNotDefinedException e) {
             System.out.println(e.getMessage());
         }
     }
@@ -199,7 +201,8 @@ public class Main {
             systemApp.addService(serviceType, latitude, longitude, price, name, value);
             System.out.printf(Message.SERVICE_CREATED.get(), serviceTypeStr.toLowerCase(), name); //todo mudei aqui
 
-        } catch (InvalidServiceTypeException | InvalidPositionException | InvalidServiceDiscountException | InvalidServiceCapacityException e1) {
+        } catch (InvalidServiceTypeException | InvalidPositionException | InvalidServiceDiscountException |
+                 InvalidServiceCapacityException e1) {
             System.out.println(e1.getMessage());
         } catch (PriceEqualOrLessThenZeroException e2) {
             switch (serviceType) {
@@ -211,6 +214,7 @@ public class Main {
             System.out.printf(e3.getMessage(), systemApp.getServiceName(name));
         }
     }
+
     /**
      * Displays the list of services in the system
      *
@@ -224,7 +228,7 @@ public class Main {
                 String serviceType = service.getServiceType().toString().toLowerCase();
                 System.out.printf(Message.SERVICES_COMMAND.get(), service.getName(), serviceType, service.getLatitude(), service.getLongitude());
             }
-        } catch (NoServicesYetException e){
+        } catch (NoServicesYetException e) {
             System.out.println(e.getMessage());
         }
     }
@@ -249,7 +253,7 @@ public class Main {
             System.out.println(Message.INVALID_STUDENT_TYPE.get());
         } catch (LodgingDoesntExistException | LodgingWithoutCapacityException e) {
             System.out.printf(e.getMessage(), lodging);
-        } catch (StudentAlreadyExistsException e){
+        } catch (StudentAlreadyExistsException e) {
             System.out.printf(e.getMessage(), systemApp.getStudentName(studentName));
         }
     }
@@ -263,7 +267,7 @@ public class Main {
      */
     private static void leaveCommand(Scanner in, HomeAwayAppClass systemApp) {
         String studentName = in.nextLine().trim();
-        try{
+        try {
             systemApp.removeStudent(studentName);
             System.out.printf(Message.HAS_LEFT.get(), studentName);
         } catch (StudentDoesNotExistException e) {
@@ -279,13 +283,12 @@ public class Main {
     private static void studentsCommand(Scanner in, HomeAwayAppClass systemApp) {
         String argument = in.nextLine().trim();
         Iterator<Student> it = systemApp.getUserIterator(argument);
-        if (systemApp.isThereNoStudents()){
+        if (systemApp.isThereNoStudents()) {
             if (argument.equalsIgnoreCase(Message.ALL.get()))
                 System.out.println(Message.NO_STUDENTS_YET.get());
             else
                 System.out.printf(Message.NO_STUDENTS_FROM.get(), argument);
-        }
-        else if (!it.hasNext()) {
+        } else if (!it.hasNext()) {
             System.out.printf(Message.NO_STUDENTS_FROM.get(), argument);
         }
         while (it.hasNext()) {
@@ -309,15 +312,15 @@ public class Main {
                 System.out.printf(Message.GO_COMMAND_DISTRACTED.get(), systemApp.getStudentName(studentName), systemApp.getServiceName(location), systemApp.getStudentName(studentName));
             else
                 System.out.printf(Message.GO_COMMAND.get(), systemApp.getStudentName(studentName), systemApp.getServiceName(location));
-        } catch (UnknownLocationException e){
+        } catch (UnknownLocationException e) {
             System.out.printf(Message.UNKNOWN_LOCATION.get(), location);
         } catch (StudentDoesNotExistException e) {
             System.out.printf(Message.STUDENT_DOES_NOT_EXIST.get(), studentName);
         } catch (InvalidGoServiceTypeException | ServiceDoesntExistException e) {
             System.out.printf(Message.LOCATION_ISNT_VALID_SERVICE.get(), location);
-        } catch (AlreadyThereException e){
+        } catch (AlreadyThereException e) {
             System.out.println(Message.ALREADY_THERE.get());
-        } catch (EatingWithoutCapacityException e){
+        } catch (EatingWithoutCapacityException e) {
             System.out.printf(e.getMessage(), location);
         }
     }
@@ -334,11 +337,11 @@ public class Main {
         try {
             systemApp.move(studentName, lodging);
             System.out.printf(Message.MOVE_COMMAND.get(), systemApp.getServiceName(lodging), systemApp.getStudentName(studentName), systemApp.getStudentName(studentName));
-        } catch (LodgingDoesntExistException | LodgingWithoutCapacityException e){
+        } catch (LodgingDoesntExistException | LodgingWithoutCapacityException e) {
             System.out.printf(e.getMessage(), lodging);
-        } catch (StudentDoesNotExistException | MoveIsNotAcceptableException e){
+        } catch (StudentDoesNotExistException | MoveIsNotAcceptableException e) {
             System.out.printf(e.getMessage(), studentName);
-        } catch (ItsStudentHomeException e){
+        } catch (ItsStudentHomeException e) {
             System.out.printf(e.getMessage(), systemApp.getStudentName(studentName));
         }
     }
@@ -354,14 +357,13 @@ public class Main {
                     Student student = it.next();
                     System.out.printf(Message.USERS_LIST.get(), student.getName(), student.getType().name().toLowerCase());
                 }
-            }
-            else
+            } else
                 System.out.printf(Message.EMPTY_SERVICE.get(), systemApp.getServiceName(service));
         } catch (InvalidOrderException e) {
             System.out.println(e.getMessage());
-        } catch (ServiceDoesntExistException e){
+        } catch (ServiceDoesntExistException e) {
             System.out.printf(e.getMessage(), service);
-        } catch (DontControlStudentEntryAndExitException e){
+        } catch (DontControlStudentEntryAndExitException e) {
             System.out.printf(e.getMessage(), systemApp.getServiceName(service));
         }
     }
@@ -381,8 +383,8 @@ public class Main {
             String serviceType = systemApp.getServiceType(studentLocation).toLowerCase();
             String studentName = systemApp.getStudentName(name);
 
-            System.out.printf(Message.WHERE_COMMAND.get(), studentName,  studentLocation, serviceType, serviceLat, serviceLon);
-        }catch (StudentDoesNotExistException e){
+            System.out.printf(Message.WHERE_COMMAND.get(), studentName, studentLocation, serviceType, serviceLat, serviceLon);
+        } catch (StudentDoesNotExistException e) {
             System.out.printf(Message.NAME_NE.get(), name);
         }
     }
@@ -395,17 +397,17 @@ public class Main {
      */
     private static void visitedCommand(Scanner in, HomeAwayAppClass systemApp) {
         String studentName = in.nextLine().trim();
-        try{
+        try {
             Iterator<Service> it = systemApp.getVisitedLocationsIterator(studentName);
             while (it.hasNext()) {
                 Service service = it.next();
                 System.out.println(service.getName());
             }
-        } catch (StudentDoesNotExistException e){
+        } catch (StudentDoesNotExistException e) {
             System.out.printf(Message.STUDENT_DOES_NOT_EXIST.get(), studentName);
         } catch (InvalidVisitedStudentTypeException e) {
             System.out.printf(Message.IS_THRIFTY.get(), systemApp.getStudentName(studentName));
-        } catch (NoVisitedAnyLocationException e){
+        } catch (NoVisitedAnyLocationException e) {
             System.out.printf(Message.HAS_NOT_VISITED_ANY_LOCATIONS.get(), systemApp.getStudentName(studentName));
         }
     }
@@ -465,21 +467,20 @@ public class Main {
             System.out.println(e.getMessage());
         } catch (StudentDoesNotExistException e) {
             System.out.printf(e.getMessage(), studentName);
-        } catch (NoServiceOfTypeException | NoTypeServiceWithThatRatingException  e){
+        } catch (NoServiceOfTypeException | NoTypeServiceWithThatRatingException e) {
             System.out.printf(e.getMessage(), serviceType);
         }
     }
 
     private static void tagCommand(Scanner in, HomeAwayAppClass systemApp) {
         String tag = in.nextLine().trim();
-        if (!systemApp.existsServiceWithTag(tag)){
+        if (!systemApp.existsServiceWithTag(tag)) {
             Iterator<Service> it = systemApp.getServicesWithTagIterator(tag);
             while (it.hasNext()) {
                 Service service = it.next();
                 System.out.printf(Message.TAG_COMMAND.get(), service.getServiceType(), service.getName());
             }
-        }
-        else
+        } else
             System.out.println(Message.NO_SERVICES_WITH_TAG.get());
     }
 
@@ -497,11 +498,11 @@ public class Main {
             System.out.println(nearestServiceName);
             if (systemApp.getWasUpdated()) //todo queria mudar mas não sei como
                 System.out.printf(Message.THRIFTY_STUDENT_INFO_STORED.get(), studentName);
-        }catch (InvalidServiceTypeException e){
+        } catch (InvalidServiceTypeException e) {
             System.out.println(Message.INVALID_SERVICE_TYPE);
-        }catch (StudentDoesNotExistException e){
+        } catch (StudentDoesNotExistException e) {
             System.out.printf(Message.STUDENT_DOES_NOT_EXIST.get(), studentName);
-        }catch (NoServiceWithTypeException e){
+        } catch (NoServiceWithTypeException e) {
             System.out.printf(Message.NO_SERVICES.get(), serviceType);
         }
     }
@@ -512,4 +513,5 @@ public class Main {
     private static void helpCommand() {
         System.out.println(Message.HELP_MESSAGE.get());
     }
+
 }

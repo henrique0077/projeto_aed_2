@@ -32,9 +32,4 @@ public class LeisureServiceClass extends AbstractService implements Serializable
         return ticketPrice - (( ticketPrice* discount) / 100); //tudo acho que é assim pus um get price
     }
 
-    @Override
-    public int getCapacity() {
-        return 0;
-    }
-
 }

@@ -179,11 +179,6 @@ public void loadBounds(String areaName) throws BoundNameDoesntExistException, Fi
     }
 
     @Override
-    public boolean isValidPlace(long serviceLat, long serviceLon) {
-        return false;
-    }
-
-    @Override
     public boolean isThereNoStudents() {
         return studentCollection.isEmpty();
     }
@@ -357,10 +352,6 @@ public void loadBounds(String areaName) throws BoundNameDoesntExistException, Fi
         return servicesCollection.getElement(service).clientsIterator(order, servicesCollection.getElement(service));
     }
 
-    public int getServiceCapacity(String service){
-        return servicesCollection.getElement(service).getCapacity();
-    }
-
     public boolean hasClientsInTheService(String service){ //era para o users, mas dá mais erros que o hasStudents
         Service serviceObj = servicesCollection.getElement(service);
         if (serviceObj instanceof EatingServiceClass eating) {
@@ -369,12 +360,6 @@ public void loadBounds(String areaName) throws BoundNameDoesntExistException, Fi
             return !lodging.getClientsList().isEmpty();
         }
         return false;
-    }
-
-
-    @Override
-    public boolean hasStudents(String service) {
-        return !servicesCollection.isEmpty();
     }
 
     @Override

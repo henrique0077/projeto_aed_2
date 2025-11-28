@@ -86,5 +86,4 @@ public interface Service extends Serializable {
 
     boolean checkCapacity(Service service);
 
-    int getCapacity();
 }

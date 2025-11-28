@@ -97,14 +97,6 @@ public interface HomeAwayApp {
      boolean isStudentType(String studentName, StudentType type);
 
      /**
-      * Checks if the service is inside bounds
-      * @param serviceLat the service latitude
-      * @param serviceLon the service longitude
-      * @return true if serviceLat is between bounds latitudes and serviceLon is between bounds longitude, false otherwise
-      */
-     boolean isValidPlace(long serviceLat,long serviceLon);
-
-     /**
       * Check if there are students in the program
       * @return <code>true</code> if StudentCollection isn't empty, false otherwise
       */
@@ -251,15 +243,11 @@ public interface HomeAwayApp {
 
     boolean existsServiceWithTag(String tag);
 
-    boolean hasStudents(String service);
-
     String getServiceName(String name);
 
     String getServiceType(String studentLocation);
 
     String getStudentName(String name);
-
-    int getServiceCapacity(String service);
 
     boolean hasClientsInTheService(String service);
 

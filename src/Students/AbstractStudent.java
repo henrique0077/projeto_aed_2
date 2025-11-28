@@ -7,11 +7,7 @@ package Students;
 import Enumerators.Message;
 import Enumerators.ServiceType;
 import Enumerators.StudentType;
-import Services.EatingLodging;
-import Services.EatingServiceClass;
-import Services.LodgingServiceClass;
-import Services.Service;
-import Services.ServiceIterator;
+import Services.*;
 import dataStructures.List;
 import dataStructures.ListInArray;
 import dataStructures.Iterator;
@@ -68,10 +64,6 @@ public abstract class AbstractStudent implements Student, Serializable {
         return home.getName();
     }
 
-    public void setCurrentLocation(Service location) {
-        this.currentLocation = location;
-    }
-
     public void setHome(Service home) {
         this.home = home;
     }
@@ -89,8 +81,8 @@ public abstract class AbstractStudent implements Student, Serializable {
         this.currentLocation = location;
         addVisitedLocation(location);
         if (currentLocation instanceof EatingServiceClass eating) {
-            if (eating.hasCapacity())
-                eating.addClient(studentName);
+        if (eating.hasCapacity())
+            eating.addClient(studentName);
         }
     }
 
