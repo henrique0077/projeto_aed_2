@@ -76,38 +76,21 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject(); // Lê as variáveis normais
+        in.defaultReadObject(); // Lê studentsByName e studentsCounter
 
-        System.out.println("1. Leitura padrão concluída.");
+        initializeMaps(); // Cria a AVL e o Mapa de Países (vazios)
 
-        if (this.studentsByName == null) {
-            System.out.println("ERRO CRÍTICO: studentsByName está NULL! Verifica se não a marcaste como 'transient' sem querer.");
-        } else {
-            System.out.println("2. studentsByName recuperado. Tamanho: " + this.studentsByName.size());
-        }
-
-        initializeMaps(); // Cria os mapas vazios
-        System.out.println("3. Mapas auxiliares inicializados.");
-
-        // TESTE DE SANIDADE AOS MAPAS AUXILIARES
-        if (this.studentsSorted == null) System.out.println("ERRO: studentsSorted está NULL");
-        if (this.studentsByCountry == null) System.out.println("ERRO: studentsByCountry está NULL");
-
-        Iterator<Student> it = studentsByName.values();
-        if (it == null) {
-            System.out.println("ERRO CRÍTICO: O método .values() retornou NULL. O problema está na HashTable/Map.");
-        } else {
-            System.out.println("4. Iterador criado. A iniciar reconstrução...");
-            while(it.hasNext()) {
+        // Percorre o mapa principal para reconstruir os outros
+        // Nota: Precisamos de um iterador para os valores do mapa studentsByName
+        if (studentsByName.size() > 0) {
+            Iterator<Student> it = studentsByName.values();
+            while (it.hasNext()) {
                 Student s = it.next();
-                if (s == null) {
-                    System.out.println("AVISO: Encontrado um estudante NULL na lista.");
-                    continue;
+                if (s != null) {
+                    repopulateMaps(s);
                 }
-                repopulateMaps(s);
             }
         }
-        System.out.println("5. Reconstrução terminada com sucesso.");
     }
 
     @Override
