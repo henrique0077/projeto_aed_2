@@ -12,20 +12,32 @@ import Enumerators.ServiceType;
 import Enumerators.StudentType;
 import java.io.Serializable;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+
 
 public class ServicesCollectionClass implements ServicesCollection, Serializable {
 
     private final List<Service> servicesInOrder;
-    private final Map<String, Service> services;
-    private final Map<String, Service> servicesEating;
-    private final Map<String, Service> servicesLodging;
-    private final Map<String, Service> servicesLeisure;
-    private final Map<Integer, Map<String, Service>> servicesByRating;
+
+    private transient Map<String, Service> services;
+    private transient Map<String, Service> servicesEating;
+    private transient Map<String, Service> servicesLodging;
+    private transient Map<String, Service> servicesLeisure;
+    private transient Map<Integer, Map<String, Service>> servicesByRating;
+
     private int serviceCounter;
     private final int DEFAULT_DIMENTION = 10;
 
     public ServicesCollectionClass() {
         servicesInOrder = new SinglyLinkedList<>();
+        serviceCounter = 0;
+        initializeMaps();
+    }
+
+    private void initializeMaps() {
         services = new SepChainHashTable<>();
         servicesEating = new SepChainHashTable<>();
         servicesLodging = new SepChainHashTable<>();
@@ -36,7 +48,13 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         servicesByRating.put(2, new SepChainHashTable<>());
         servicesByRating.put(3, new SepChainHashTable<>());
         servicesByRating.put(4, new SepChainHashTable<>());
-        serviceCounter = 0;
+    }
+
+    private void repopulateMaps(Service elem) {
+        String serviceName = elem.getName().toUpperCase();
+        services.put(serviceName, elem);
+        storeAndSortByType(elem);
+        servicesByRating.get(3).put(serviceName, elem);
     }
 
     @Override
@@ -52,12 +70,29 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     @Override
     public void addService(String serviceName, Service elem) {
-        String service  = serviceName.toUpperCase();
+        /**String service  = serviceName.toUpperCase();
         servicesInOrder.addLast(elem);
         services.put(service, elem);
         storeAndSortByType(elem); // Para organizar certos serviços por tipo
         serviceCounter++;
-        servicesByRating.get(3).put(service, elem);// 3 = 4-1 porque o mapa começa na posição 0 e os serviços quando inicializados têm 4 de rating
+        servicesByRating.get(3).put(service, elem);// 3 = 4-1 porque o mapa começa na posição 0 e os serviços quando inicializados têm 4 de rating*/
+
+        servicesInOrder.addLast(elem); // Adiciona na lista principal
+        serviceCounter++;
+
+        repopulateMaps(elem);
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject(); // Lê servicesInOrder e serviceCounter do disco
+
+        repopulateMaps(); // Recria os mapas que estavam transient (null)
+
+        // Percorre a lista salva e preenche os mapas
+        Iterator<Service> it = servicesInOrder.iterator();
+        while (it.hasNext()) {
+            repopulateMaps(it.next());
+        }
     }
 
     @Override

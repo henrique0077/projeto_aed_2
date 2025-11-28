@@ -1,11 +1,13 @@
 package dataStructures;
-
+/**
+ * SepChain Hash Table Iterator
+ * @author AED  Team
+ * @version 1.0
+ * @param <K> Generic Key
+ * @param <V> Generic Value
+ */
 import dataStructures.exceptions.NoSuchElementException;
 
-/**
- * Iterador robusto para a SepChainHashTable.
- * Resolve o bug onde o iterador ficava "preso" em buckets vazios.
- */
 class SepChainHashTableIterator<K,V> implements Iterator<Map.Entry<K,V>> {
 
     private Map<K,V>[] table;
@@ -14,44 +16,64 @@ class SepChainHashTableIterator<K,V> implements Iterator<Map.Entry<K,V>> {
 
     public SepChainHashTableIterator(Map<K,V>[] table) {
         this.table = table;
-        rewind();
-    }
+        rewind();    }
 
+    /**
+     * Returns true if next would return an element
+     * rather than throwing an exception.
+     *
+     * @return true iff the iteration has more elements
+     */
     public boolean hasNext() {
-        return currentBucketIterator != null && currentBucketIterator.hasNext();
+        return currentBucketIterator != null;
     }
 
+    /**
+     * Returns the next element in the iteration.
+     *
+     * @return the next element in the iteration
+     * @throws NoSuchElementException - if call is made without verifying pre-condition
+     */
     public Map.Entry<K,V> next() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        Map.Entry<K,V> entry = currentBucketIterator.next();
-
-        // Se este bucket acabou, procura já o próximo elemento válido
-        if (!currentBucketIterator.hasNext()) {
-            findNextValidBucket();
-        }
-        return entry;
+        Map.Entry<K,V> aux =  currentBucketIterator.next();
+        findNextBucket();
+        return aux;
     }
 
-    private void findNextValidBucket() {
+    private void findNextBucket() {
+        if (currentBucketIterator != null && currentBucketIterator.hasNext()) {
+            return;
+        }
         currentBucket++;
         while (currentBucket < table.length) {
-            if (table[currentBucket] != null && !table[currentBucket].isEmpty()) {
+            if (!table[currentBucket].isEmpty()) {
                 currentBucketIterator = table[currentBucket].iterator();
-                if (currentBucketIterator.hasNext()) {
-                    return; // Encontrámos um bucket com dados
-                }
+                return;
             }
             currentBucket++;
         }
-        // Se chegámos aqui, não há mais elementos
         currentBucketIterator = null;
     }
 
+    /**
+     * Restarts the iteration.
+     * After rewind, if the iteration is not empty, next will return the first element.
+     */
     public void rewind() {
         currentBucket = -1;
         currentBucketIterator = null;
-        findNextValidBucket(); // Avança logo para o primeiro elemento válido
+        for (int i = 0; i < table.length; i++) {
+            if (table[i] != null) {
+                currentBucketIterator = table[i].iterator();
+                if (currentBucketIterator != null && currentBucketIterator.hasNext()) {
+                    currentBucket = i;
+                    break;
+                }
+            }
+        }
     }
 }
+

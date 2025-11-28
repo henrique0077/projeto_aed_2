@@ -24,6 +24,8 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
         studentsCounter = 0;
     }
 
+    //private
+
     @Override
     public boolean isEmpty() {
         return studentsCounter == 0;

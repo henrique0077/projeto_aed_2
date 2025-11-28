@@ -115,6 +115,7 @@ public void loadBounds(String areaName) throws BoundNameDoesntExistException, Fi
         this.currentBound = (Bound) ois.readObject();
         this.servicesCollection = (ServicesCollection) ois.readObject();
         this.studentCollection = (StudentCollection) ois.readObject();
+
     } catch (IOException e) {
         e.printStackTrace();
         throw new FileDoesNotExistsException();
