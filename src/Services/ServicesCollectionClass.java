@@ -215,8 +215,9 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     public Iterator<Service> allServiceIteratorSortedRating() {
         List<Service> allServicesByRating = new ListInArray<>(DEFAULT_DIMENTION);
 
-        // Percorre a lista original (que tem a ordem de inserção)
-        // Filtra por rating decrescente (5 -> 1)
+        // Iteramos sobre a lista ORIGINAL (servicesInOrder), que mantém a ordem de inserção.
+        // Filtramos manualmente por estrelas, de 5 para 1.
+        // Assim, dentro de cada estrela, a ordem original é preservada.
         for (int r = 5; r >= 1; r--) {
             Iterator<Service> it = servicesInOrder.iterator();
             while (it.hasNext()) {
