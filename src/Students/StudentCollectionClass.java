@@ -10,21 +10,41 @@ import dataStructures.*;
 import javax.swing.plaf.PanelUI;
 import java.io.Serializable;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+
 public class StudentCollectionClass implements StudentCollection, Serializable {
 
     private final Map<String, Student> studentsByName;
-    private final Map<String, Student> studentsSorted;
-    private final Map<String, List<Student>> studentsByCountry;  //este não tinhamos no relatório, mas acho boa ideia
+
+    private transient Map<String, Student> studentsSorted;
+    private transient Map<String, List<Student>> studentsByCountry;  //este não tinhamos no relatório, mas acho boa ideia
     private int studentsCounter;
 
     public StudentCollectionClass(){
         studentsByName = new SepChainHashTable<>();
-        studentsSorted = new AVLSortedMap<>();
-        studentsByCountry = new SepChainHashTable<>();
         studentsCounter = 0;
+        initializeMaps();
     }
 
-    //private
+    private void initializeMaps() {
+        studentsSorted = new AVLSortedMap<>();
+        studentsByCountry = new SepChainHashTable<>();
+    }
+
+    private void repopulateMaps(Student elem) {
+        String studentName = elem.getName().toUpperCase();
+        String countryCode = elem.getCountry().toUpperCase();
+
+        studentsSorted.put(studentName, elem);
+
+        if (studentsByCountry.get(countryCode) == null) {
+            studentsByCountry.put(countryCode, new DoublyLinkedList<>());
+        }
+        studentsByCountry.get(countryCode).addLast(elem);
+    }
+
+
 
     @Override
     public boolean isEmpty() {
@@ -46,12 +66,48 @@ public class StudentCollectionClass implements StudentCollection, Serializable {
         String countryCode = country.toUpperCase();
 
         studentsByName.put(student, elem);
-        studentsSorted.put(student, elem);
+        /**studentsSorted.put(student, elem);
         if (studentsByCountry.get(countryCode) == null) { //se aquele país ainda não existir, criamos
             studentsByCountry.put(countryCode, new DoublyLinkedList<>());
         }
-        studentsByCountry.get(countryCode).addLast(elem);
+        studentsByCountry.get(countryCode).addLast(elem);*/
         studentsCounter++;
+        repopulateMaps(elem);
+    }
+
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject(); // Lê as variáveis normais
+
+        System.out.println("1. Leitura padrão concluída.");
+
+        if (this.studentsByName == null) {
+            System.out.println("ERRO CRÍTICO: studentsByName está NULL! Verifica se não a marcaste como 'transient' sem querer.");
+        } else {
+            System.out.println("2. studentsByName recuperado. Tamanho: " + this.studentsByName.size());
+        }
+
+        initializeMaps(); // Cria os mapas vazios
+        System.out.println("3. Mapas auxiliares inicializados.");
+
+        // TESTE DE SANIDADE AOS MAPAS AUXILIARES
+        if (this.studentsSorted == null) System.out.println("ERRO: studentsSorted está NULL");
+        if (this.studentsByCountry == null) System.out.println("ERRO: studentsByCountry está NULL");
+
+        Iterator<Student> it = studentsByName.values();
+        if (it == null) {
+            System.out.println("ERRO CRÍTICO: O método .values() retornou NULL. O problema está na HashTable/Map.");
+        } else {
+            System.out.println("4. Iterador criado. A iniciar reconstrução...");
+            while(it.hasNext()) {
+                Student s = it.next();
+                if (s == null) {
+                    System.out.println("AVISO: Encontrado um estudante NULL na lista.");
+                    continue;
+                }
+                repopulateMaps(s);
+            }
+        }
+        System.out.println("5. Reconstrução terminada com sucesso.");
     }
 
     @Override

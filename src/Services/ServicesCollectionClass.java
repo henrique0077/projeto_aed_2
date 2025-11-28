@@ -14,7 +14,6 @@ import java.io.Serializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 
 
@@ -86,7 +85,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject(); // Lê servicesInOrder e serviceCounter do disco
 
-        repopulateMaps(); // Recria os mapas que estavam transient (null)
+        initializeMaps(); // Recria os mapas que estavam transient (null)
 
         // Percorre a lista salva e preenche os mapas
         Iterator<Service> it = servicesInOrder.iterator();
