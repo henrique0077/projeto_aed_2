@@ -480,7 +480,7 @@ public class Main {
             Iterator<Service> it = systemApp.getServicesWithTagIterator(tag);
             while (it.hasNext()) {
                 Service service = it.next();
-                System.out.printf(Message.TAG_COMMAND.get(), service.getServiceType(), service.getName());
+                System.out.printf(Message.TAG_COMMAND.get(), service.getServiceType().get(), service.getName());
             }
         } else
             System.out.println(Message.NO_SERVICES_WITH_TAG.get());

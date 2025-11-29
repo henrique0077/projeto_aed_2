@@ -9,13 +9,10 @@ import dataStructures.*;
 
 import exceptions.ServiceDoesntExistException;
 import Enumerators.ServiceType;
-import Enumerators.StudentType;
 import java.io.Serializable;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-
-
 
 public class ServicesCollectionClass implements ServicesCollection, Serializable {
 
@@ -25,7 +22,8 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     private transient Map<String, Service> servicesEating;
     private transient Map<String, Service> servicesLodging;
     private transient Map<String, Service> servicesLeisure;
-    private transient Map<Integer, Map<String, Service>> servicesByRating;
+    // Map de Inteiro -> Lista (DoublyLinkedList) para preservar a ordem de chegada (FIFO)
+    private transient Map<Integer, List<Service>> servicesByRating;
 
     private int serviceCounter;
     private final int DEFAULT_DIMENTION = 10;
@@ -41,12 +39,13 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         servicesEating = new SepChainHashTable<>();
         servicesLodging = new SepChainHashTable<>();
         servicesLeisure = new SepChainHashTable<>();
+        // Inicializa com listas ligadas para manter a ordem de inserção em cada rating
         servicesByRating = new SepChainHashTable<>(5);
-        servicesByRating.put(0, new SepChainHashTable<>());
-        servicesByRating.put(1, new SepChainHashTable<>());
-        servicesByRating.put(2, new SepChainHashTable<>());
-        servicesByRating.put(3, new SepChainHashTable<>());
-        servicesByRating.put(4, new SepChainHashTable<>());
+        servicesByRating.put(0, new DoublyLinkedList<>());
+        servicesByRating.put(1, new DoublyLinkedList<>());
+        servicesByRating.put(2, new DoublyLinkedList<>());
+        servicesByRating.put(3, new DoublyLinkedList<>());
+        servicesByRating.put(4, new DoublyLinkedList<>());
     }
 
     private void repopulateMaps(Service elem) {
@@ -54,10 +53,10 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         services.put(serviceName, elem);
         storeAndSortByType(elem);
 
-        // CORREÇÃO: Usar o rating real do serviço
+        // Adiciona à lista correspondente ao rating atual (no fim da lista)
         int ratingIndex = elem.getAverageStars() - 1;
         if (ratingIndex >= 0 && ratingIndex <= 4) {
-            servicesByRating.get(ratingIndex).put(serviceName, elem);
+            servicesByRating.get(ratingIndex).addLast(elem);
         }
     }
 
@@ -68,31 +67,19 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     @Override
     public boolean hasElem(String serviceName) {
-        // Henrique henrique
         return services.get(serviceName.toUpperCase()) != null;
     }
 
     @Override
     public void addService(String serviceName, Service elem) {
-        /**String service  = serviceName.toUpperCase();
-        servicesInOrder.addLast(elem);
-        services.put(service, elem);
-        storeAndSortByType(elem); // Para organizar certos serviços por tipo
-        serviceCounter++;
-        servicesByRating.get(3).put(service, elem);// 3 = 4-1 porque o mapa começa na posição 0 e os serviços quando inicializados têm 4 de rating*/
-
         servicesInOrder.addLast(elem); // Adiciona na lista principal
         serviceCounter++;
-
         repopulateMaps(elem);
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject(); // Lê servicesInOrder e serviceCounter do disco
-
-        initializeMaps(); // Recria os mapas que estavam transient (null)
-
-        // Percorre a lista salva e preenche os mapas
+        in.defaultReadObject();
+        initializeMaps();
         Iterator<Service> it = servicesInOrder.iterator();
         while (it.hasNext()) {
             repopulateMaps(it.next());
@@ -102,34 +89,33 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     @Override
     public boolean isThereServicesWithCertainRate(String type, int stars) {
         boolean result = false;
-        Iterator<Service> service = servicesByRating.get(stars - 1).values();
-        while (service.hasNext() && !result) {                               //acho que isto que fiz agora está melhor que o que está comocomentário
+        Iterator<Service> service = servicesByRating.get(stars - 1).iterator();
+        while (service.hasNext() && !result) {
             Service s = service.next();
             if (s.getServiceType().toString().equals(type))
                 result = true;
         }
-//        if (servicesByRating.get(stars-1) != null) {        //stars-1 porque temos 5 espaços para 5 estrelas, mas começa no 0 logo só vai até 4
-//            result = isThereAnyServiceWithType(type);
-//        }
-        return result;  //criar um sepchainhastable com 5 espaços, um para cada rating e em cada espaço fazer outro sep... para ser fácil de acrescentar e remover serviços do rating, ficando com ordem de insereção
-    }                   //isto já está feito lê só os comentários \_ ^_^ _/
+        return result;
+    }
 
     public void updateRating(String serviceName, int oldStars, int newStars) {
         String nameUpper = serviceName.toUpperCase();
+        Service s = services.get(nameUpper);
 
-        // Remove do bucket antigo
-        if (oldStars >= 1 && oldStars <= 5)
-            servicesByRating.get(oldStars - 1).remove(nameUpper);
+        if (s == null) return;
 
-        // Adiciona ao novo bucket
-        if (newStars >= 1 && newStars <= 5) {
-            Service s = services.get(nameUpper);
-            if (s != null) {
-                servicesByRating.get(newStars - 1).put(nameUpper, s);
+        if (oldStars >= 1 && oldStars <= 5) {
+            List<Service> list = servicesByRating.get(oldStars - 1);
+            int pos = list.indexOf(s);
+            if (pos != -1) {
+                list.remove(pos);
             }
         }
-    }
 
+        if (newStars >= 1 && newStars <= 5) {
+            servicesByRating.get(newStars - 1).addLast(s);
+        }
+    }
 
     @Override
     public boolean isThereAnyServiceWithType(String type) {
@@ -176,25 +162,20 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     @Override
     public Service getTheCheapestServiceThrifty(long lat, long lon, String type) {
         int minPrice = Integer.MAX_VALUE;
-        List<Service> cheapestServices = new ListInArray<>(DEFAULT_DIMENTION); //ver se a dimenção pode ser 10 ou se temos que mudar
+        List<Service> cheapestServices = new ListInArray<>(DEFAULT_DIMENTION);
         Iterator<Service> it = services.values();
 
         while (it.hasNext()) {
             Service next = it.next();
             int servicePrice = next.getServicePrice();
 
-            if (next.getServiceType().toString().equals(type)) {        //ver se podemos usar o toString no projeto por causa das novas regras
+            if (next.getServiceType().toString().equals(type)) {
                 if (servicePrice < minPrice) {
-                    // If it finds a new smaller Price, clears the array and starts a new one
                     minPrice = servicePrice;
                     if (!cheapestServices.isEmpty())
                         cheapestServices.removeFirst();
                     cheapestServices.addLast(next);
                 }
-//                else if (servicePrice == minPrice) {        //no fim vai ser passado o último, logo não é necessário estarmos a adicionar o segundo, apenas atualizar o mais alto
-//                    // If they have the same minPrice, it adds to an Array
-//                    cheapestServices.addLast(next);
-//                }
             }
         }
         return cheapestServices.getFirst();
@@ -205,7 +186,6 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return services.get(serviceName.toUpperCase());
     }
 
-
     @Override
     public Iterator<Service> allServiceIterator() {
         return servicesInOrder.iterator();
@@ -214,18 +194,10 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     @Override
     public Iterator<Service> allServiceIteratorSortedRating() {
         List<Service> allServicesByRating = new ListInArray<>(DEFAULT_DIMENTION);
-
-        // Iteramos sobre a lista ORIGINAL (servicesInOrder), que mantém a ordem de inserção.
-        // Filtramos manualmente por estrelas, de 5 para 1.
-        // Assim, dentro de cada estrela, a ordem original é preservada.
-        for (int r = 5; r >= 1; r--) {
-            Iterator<Service> it = servicesInOrder.iterator();
-            while (it.hasNext()) {
-                Service s = it.next();
-                if (s.getAverageStars() == r) {
-                    allServicesByRating.addLast(s);
-                }
-            }
+        for (int i = 4; i >= 0; i--) {
+            Iterator<Service> it = servicesByRating.get(i).iterator();
+            while (it.hasNext())
+                allServicesByRating.addLast(it.next());
         }
         return allServicesByRating.iterator();
     }
@@ -235,58 +207,12 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return null;
     }
 
-    /**
-     * Falta esta merda
-     *
-     * @param type   The type of the service
-     * @param rating The rating of the service
-     * @param lat
-     * @param lon
-     * @return
-     */
     @Override
-//    public Iterator<Service> serviceIteratorByType(String type, int rating, long lat, long lon) {
-//        List<Service> sorted = sortServices(false);
-//        Iterator<Service> s = new ServiceTypeIterator(sorted, serviceCounter, type, rating);
-//        List<Service> servicesToCheck = new ListInArray<>(DEFAULT_DIMENTION);
-//        while (s.hasNext()) {
-//            servicesToCheck.addLast(s.next());
-//        }
-//        List<Service> nearestServices = new ListInArray<>(DEFAULT_DIMENTION);
-//        long nearPos = Long.MAX_VALUE;
-//        for (int i = 0; i < servicesToCheck.size(); i++) {
-//            Service currentService = servicesToCheck.get(i);
-//            long lat2 = currentService.getLatitude();
-//            long lon2 = currentService.getLongitude();
-//            long position = Math.abs(lat - lat2) + Math.abs(lon - lon2);
-//
-//            if (position < nearPos) {
-//                nearPos = position;
-//                nearestServices = new ListInArray<>(DEFAULT_DIMENTION); // aqui limpa
-//                nearestServices.addLast(currentService);
-//            } else if (position == nearPos) {
-//                nearestServices.addLast(currentService);
-//            }
-//        }
-//        return nearestServices.iterator();
-//    }
-
     public Iterator<Service> serviceIteratorByType(String type, int rating, long lat, long lon) {
         Map<String, Service> allServices = new SepChainHashTable<>(DEFAULT_DIMENTION);
-        Map<String, Service> typeMap = getServiceByType(type);
-        Iterator<String> typeIterator = typeMap.keys();
-        // Verificar bounds para rating
+
         if (rating >= 1 && rating <= 5) {
-            Iterator<String> ratingIterator = servicesByRating.get(rating - 1).keys();
-            while (typeIterator.hasNext() && ratingIterator.hasNext()) {
-                String nextType = typeIterator.next();
-                String nextRating = ratingIterator.next();
-                // Nota: Esta lógica de intersecção parece depender da ordem dos iteradores,
-                // mas mantive a estrutura original. O ideal seria verificar contains.
-                // Abaixo está uma simplificação segura:
-            }
-            // Abordagem mais segura: iterar sobre o bucket de rating e verificar se o tipo corresponde
-            Iterator<Service> rateIt = servicesByRating.get(rating - 1).values();
+            Iterator<Service> rateIt = servicesByRating.get(rating - 1).iterator();
             while(rateIt.hasNext()){
                 Service s = rateIt.next();
                 if(s.getServiceType().toString().equals(type)){
@@ -294,8 +220,6 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
                 }
             }
         }
-
-        // CORREÇÃO: Retornar o iterador da LISTA ordenada, não os valores do mapa desordenado
         return getNearest(lat, lon, allServices).iterator();
     }
 
@@ -311,17 +235,47 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return temp.iterator();
     }
 
+    // --- MÉTODO TAG REFATORADO (Sem Break) ---
     public Iterator<Service> getServicesWithTag(String tag) {
         List<Service> temp = new ListInArray<>(DEFAULT_DIMENTION);
-        Iterator<Service> it = services.values();
+        Iterator<Service> it = servicesInOrder.iterator();
+        String pattern = tag.toLowerCase();
+
         while (it.hasNext()) {
             Service s = it.next();
             Iterator<String> tagsIt = s.getDescriptions();
-            boolean added = false;
+            boolean added = false; // Variável de controlo
+
             while (tagsIt.hasNext() && !added) {
-                if (tagsIt.next().equalsIgnoreCase(tag)) {
-                    temp.addLast(s);
-                    added = true;
+                String description = tagsIt.next();
+                String text = description.toLowerCase();
+                int searchStart = 0;
+
+                // O loop controla-se pela flag 'added' e limites do texto
+                while (searchStart < text.length() && !added) {
+                    int idx = StringMatching.boyerMoore(text.substring(searchStart), pattern);
+
+                    if (idx != -1) {
+                        int trueIdx = searchStart + idx;
+
+                        // Verificar fronteiras
+                        char charBefore = (trueIdx == 0) ? ' ' : text.charAt(trueIdx - 1);
+                        boolean startOk = !Character.isLetterOrDigit(charBefore);
+
+                        char charAfter = (trueIdx + pattern.length() == text.length()) ? ' ' : text.charAt(trueIdx + pattern.length());
+                        boolean endOk = !Character.isLetterOrDigit(charAfter);
+
+                        if (startOk && endOk) {
+                            temp.addLast(s);
+                            added = true; // Encontrou e validou: isto vai fazer sair de ambos os loops
+                        } else {
+                            // Encontrou mas não é palavra inteira, avança para procurar mais à frente
+                            searchStart = trueIdx + 1;
+                        }
+                    } else {
+                        // Não encontrou mais ocorrências, termina o loop da descrição
+                        searchStart = text.length();
+                    }
                 }
             }
         }
@@ -337,8 +291,6 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     }
 
     private Map<String, Service> getServiceByType(String type) {
-       String i = ServiceType.EATING.get();
-
         return switch (type) {
             case "EATING" -> servicesEating;
             case "LODGING" -> servicesLodging;
@@ -346,5 +298,4 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
             default -> null;
         };
     }
-
 }

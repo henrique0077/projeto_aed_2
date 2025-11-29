@@ -4,9 +4,9 @@ import exceptions.InvalidServiceTypeException;
 
 public enum ServiceType {
 
-    EATING ("EATING"),
-    LODGING ("LODGING"),
-    LEISURE ("LEISURE");
+    EATING ("eating"),
+    LODGING ("lodging"),
+    LEISURE ("leisure"),;
 
     private String serviceType;
 
