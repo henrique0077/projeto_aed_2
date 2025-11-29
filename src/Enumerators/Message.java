@@ -81,7 +81,7 @@ public enum Message {
     LODGING_IS_FULL ("lodging %s is full!\n"), //location name
     ITS_STUDENT_HOME("That is %s's home!\n"), //studentName
     ALL ("all"),
-    NO_SERVICES_WITH_TAG ("There are no services with this tag!\n"),
+    NO_SERVICES_WITH_TAG ("There are no services with this tag!"),
 
 
 

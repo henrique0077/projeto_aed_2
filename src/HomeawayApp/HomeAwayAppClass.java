@@ -549,12 +549,7 @@ public void loadBounds(String areaName) throws BoundNameDoesntExistException, Fi
     }
 
     public boolean existsServiceWithTag(String tag) {
-        Iterator<String> it = servicesCollection.getDescriptions();
-        while (it.hasNext()) {
-            if (it.next().equalsIgnoreCase(tag))
-                return true;
-        }
-        return false;
+        return servicesCollection.getServicesWithTag(tag).hasNext();
     }
 
     public Iterator<Service> getServicesWithTagIterator(String tag){

@@ -22,7 +22,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     private transient Map<String, Service> servicesEating;
     private transient Map<String, Service> servicesLodging;
     private transient Map<String, Service> servicesLeisure;
-    // Map de Inteiro -> Lista (DoublyLinkedList) para preservar a ordem de chegada (FIFO)
+    // Map de Inteiro -> Lista para preservar a ordem de chegada (FIFO) no Ranking
     private transient Map<Integer, List<Service>> servicesByRating;
 
     private int serviceCounter;
@@ -39,13 +39,11 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         servicesEating = new SepChainHashTable<>();
         servicesLodging = new SepChainHashTable<>();
         servicesLeisure = new SepChainHashTable<>();
-        // Inicializa com listas ligadas para manter a ordem de inserção em cada rating
+        // Inicializa listas de ranking
         servicesByRating = new SepChainHashTable<>(5);
-        servicesByRating.put(0, new DoublyLinkedList<>());
-        servicesByRating.put(1, new DoublyLinkedList<>());
-        servicesByRating.put(2, new DoublyLinkedList<>());
-        servicesByRating.put(3, new DoublyLinkedList<>());
-        servicesByRating.put(4, new DoublyLinkedList<>());
+        for (int i = 0; i < 5; i++) {
+            servicesByRating.put(i, new DoublyLinkedList<>());
+        }
     }
 
     private void repopulateMaps(Service elem) {
@@ -53,7 +51,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         services.put(serviceName, elem);
         storeAndSortByType(elem);
 
-        // Adiciona à lista correspondente ao rating atual (no fim da lista)
+        // Adiciona à lista de ranking correta
         int ratingIndex = elem.getAverageStars() - 1;
         if (ratingIndex >= 0 && ratingIndex <= 4) {
             servicesByRating.get(ratingIndex).addLast(elem);
@@ -72,7 +70,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
     @Override
     public void addService(String serviceName, Service elem) {
-        servicesInOrder.addLast(elem); // Adiciona na lista principal
+        servicesInOrder.addLast(elem); // Preserva ordem de inserção global
         serviceCounter++;
         repopulateMaps(elem);
     }
@@ -104,6 +102,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
         if (s == null) return;
 
+        // Remove do bucket antigo
         if (oldStars >= 1 && oldStars <= 5) {
             List<Service> list = servicesByRating.get(oldStars - 1);
             int pos = list.indexOf(s);
@@ -112,6 +111,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
             }
         }
 
+        // Adiciona ao novo bucket (fim da lista -> FIFO)
         if (newStars >= 1 && newStars <= 5) {
             servicesByRating.get(newStars - 1).addLast(s);
         }
@@ -194,6 +194,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     @Override
     public Iterator<Service> allServiceIteratorSortedRating() {
         List<Service> allServicesByRating = new ListInArray<>(DEFAULT_DIMENTION);
+        // Itera de 5 estrelas até 1 estrela
         for (int i = 4; i >= 0; i--) {
             Iterator<Service> it = servicesByRating.get(i).iterator();
             while (it.hasNext())
@@ -235,7 +236,6 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return temp.iterator();
     }
 
-    // --- MÉTODO TAG REFATORADO (Sem Break) ---
     public Iterator<Service> getServicesWithTag(String tag) {
         List<Service> temp = new ListInArray<>(DEFAULT_DIMENTION);
         Iterator<Service> it = servicesInOrder.iterator();
@@ -244,21 +244,20 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         while (it.hasNext()) {
             Service s = it.next();
             Iterator<String> tagsIt = s.getDescriptions();
-            boolean added = false; // Variável de controlo
+            boolean added = false; // Evita duplicados do mesmo serviço
 
             while (tagsIt.hasNext() && !added) {
                 String description = tagsIt.next();
                 String text = description.toLowerCase();
                 int searchStart = 0;
 
-                // O loop controla-se pela flag 'added' e limites do texto
                 while (searchStart < text.length() && !added) {
                     int idx = StringMatching.boyerMoore(text.substring(searchStart), pattern);
 
                     if (idx != -1) {
                         int trueIdx = searchStart + idx;
 
-                        // Verificar fronteiras
+                        // CORREÇÃO: !isLetterOrDigit permite pontuação (.,;) como separador
                         char charBefore = (trueIdx == 0) ? ' ' : text.charAt(trueIdx - 1);
                         boolean startOk = !Character.isLetterOrDigit(charBefore);
 
@@ -267,13 +266,11 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
 
                         if (startOk && endOk) {
                             temp.addLast(s);
-                            added = true; // Encontrou e validou: isto vai fazer sair de ambos os loops
+                            added = true;
                         } else {
-                            // Encontrou mas não é palavra inteira, avança para procurar mais à frente
                             searchStart = trueIdx + 1;
                         }
                     } else {
-                        // Não encontrou mais ocorrências, termina o loop da descrição
                         searchStart = text.length();
                     }
                 }

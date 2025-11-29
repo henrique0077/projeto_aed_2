@@ -476,7 +476,7 @@ public class Main {
 
     private static void tagCommand(Scanner in, HomeAwayAppClass systemApp) {
         String tag = in.nextLine().trim();
-        if (!systemApp.existsServiceWithTag(tag)) {
+        if (systemApp.existsServiceWithTag(tag)) {
             Iterator<Service> it = systemApp.getServicesWithTagIterator(tag);
             while (it.hasNext()) {
                 Service service = it.next();
