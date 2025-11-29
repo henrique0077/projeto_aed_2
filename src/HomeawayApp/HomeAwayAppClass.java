@@ -451,7 +451,7 @@ public void loadBounds(String areaName) throws BoundNameDoesntExistException, Fi
             throw new InvalidServiceTypeException();
         if (isValidStudentName(studentName))
             throw new StudentDoesNotExistException();
-        if (hasValidServiceByType(serviceType))
+        if (!hasValidServiceByType(serviceType))
             throw new NoServiceWithTypeException();
         wasUpdated = false;
         Student student = studentCollection.getElement(studentName);
@@ -520,19 +520,54 @@ public void loadBounds(String areaName) throws BoundNameDoesntExistException, Fi
     }
 
     @Override
+//    public Iterator<Service> getServiceIteratorByType(String type, int rating, String studentName) throws InvalidStarsException, StudentDoesNotExistException, InvalidServiceTypeException, NoServiceOfTypeException, NoTypeServiceWithThatRatingException {
+//        if (rating < 1 || rating > 5)
+//            throw new InvalidStarsException();
+//        if (isValidStudentName(studentName))
+//            throw new StudentDoesNotExistException();
+//        if (!type.equals(ServiceType.EATING.get()) && !type.equals(ServiceType.LODGING.get()) && !type.equals(ServiceType.LEISURE.get()))
+//            throw new InvalidServiceTypeException();
+//        if (!hasValidServiceByType(type))
+//            throw new NoServiceOfTypeException();
+//        if (servicesCollection.isThereServicesWithCertainRate(type, rating))
+//            throw new NoTypeServiceWithThatRatingException();
+//        long lat = servicesCollection.getElement(studentName).getLatitude();
+//        long lon = servicesCollection.getElement(studentName).getLongitude();
+//        return servicesCollection.serviceIteratorByType(type, rating, lat, lon);
+//    }
     public Iterator<Service> getServiceIteratorByType(String type, int rating, String studentName) throws InvalidStarsException, StudentDoesNotExistException, InvalidServiceTypeException, NoServiceOfTypeException, NoTypeServiceWithThatRatingException {
+        // 1. Validar estrelas (Prioridade 1)
         if (rating < 1 || rating > 5)
             throw new InvalidStarsException();
+
+        // 2. Validar se o estudante existe (Prioridade 2 - TROCADO)
+        // Esta validação deve vir ANTES da validação do tipo de serviço.
         if (isValidStudentName(studentName))
             throw new StudentDoesNotExistException();
-        if (!type.equals(ServiceType.EATING.get()) && !type.equals(ServiceType.LODGING.get()) && !type.equals(ServiceType.LEISURE.get()))
+
+        // 3. Validar se o texto do tipo de serviço é válido (Prioridade 3 - TROCADO)
+        boolean isValidType = type.equalsIgnoreCase(ServiceType.EATING.get()) ||
+                type.equalsIgnoreCase(ServiceType.LODGING.get()) ||
+                type.equalsIgnoreCase(ServiceType.LEISURE.get());
+
+        if (!isValidType)
             throw new InvalidServiceTypeException();
+
+        // 4. Validar se existem serviços desse tipo registados no sistema
         if (!hasValidServiceByType(type))
             throw new NoServiceOfTypeException();
-        if (servicesCollection.isThereServicesWithCertainRate(type, rating))
+
+        // 5. Validar se existem serviços desse tipo com essa classificação
+        if (!servicesCollection.isThereServicesWithCertainRate(type, rating))
             throw new NoTypeServiceWithThatRatingException();
-        long lat = servicesCollection.getElement(studentName).getLatitude();
-        long lon = servicesCollection.getElement(studentName).getLongitude();
+
+        // 6. Obter coordenadas
+        String location = studentCollection.getElement(studentName).getCurrentLocation();
+        Service studentServiceLocation = servicesCollection.getElement(location);
+
+        long lat = studentServiceLocation.getLatitude();
+        long lon = studentServiceLocation.getLongitude();
+
         return servicesCollection.serviceIteratorByType(type, rating, lat, lon);
     }
 

@@ -85,12 +85,22 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     }
 
     @Override
+//    public boolean isThereServicesWithCertainRate(String type, int stars) {
+//        boolean result = false;
+//        Iterator<Service> service = servicesByRating.get(stars - 1).iterator();
+//        while (service.hasNext() && !result) {
+//            Service s = service.next();
+//            if (s.getServiceType().toString().equals(type))
+//                result = true;
+//        }
+//        return result;
+//    }
     public boolean isThereServicesWithCertainRate(String type, int stars) {
         boolean result = false;
         Iterator<Service> service = servicesByRating.get(stars - 1).iterator();
         while (service.hasNext() && !result) {
             Service s = service.next();
-            if (s.getServiceType().toString().equals(type))
+            if (s.getServiceType().toString().equalsIgnoreCase(type))
                 result = true;
         }
         return result;
@@ -117,10 +127,21 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         }
     }
 
+//    @Override
+//    public boolean isThereAnyServiceWithType(String type) {
+//        boolean answer = false;
+//        switch (type) {
+//            case "LODGING" -> answer = !servicesLodging.isEmpty();
+//            case "EATING" -> answer = !servicesEating.isEmpty();
+//            case "LEISURE" -> answer = !servicesLeisure.isEmpty();
+//        }
+//        return answer;
+//    }
     @Override
     public boolean isThereAnyServiceWithType(String type) {
         boolean answer = false;
-        switch (type) {
+        // CORREÇÃO: Usar toUpperCase() no switch
+        switch (type.toUpperCase()) {
             case "LODGING" -> answer = !servicesLodging.isEmpty();
             case "EATING" -> answer = !servicesEating.isEmpty();
             case "LEISURE" -> answer = !servicesLeisure.isEmpty();
@@ -169,7 +190,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
             Service next = it.next();
             int servicePrice = next.getServicePrice();
 
-            if (next.getServiceType().toString().equals(type)) {
+            if (next.getServiceType().get().equalsIgnoreCase(type)) {
                 if (servicePrice < minPrice) {
                     minPrice = servicePrice;
                     if (!cheapestServices.isEmpty())
@@ -208,6 +229,22 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
         return null;
     }
 
+//    @Override
+//    public Iterator<Service> serviceIteratorByType(String type, int rating, long lat, long lon) {
+//        Map<String, Service> allServices = new SepChainHashTable<>(DEFAULT_DIMENTION);
+//
+//        if (rating >= 1 && rating <= 5) {
+//            Iterator<Service> rateIt = servicesByRating.get(rating - 1).iterator();
+//            while(rateIt.hasNext()){
+//                Service s = rateIt.next();
+//                if(s.getServiceType().toString().equals(type)){
+//                    allServices.put(s.getName().toUpperCase(), s);
+//                }
+//            }
+//        }
+//        return getNearest(lat, lon, allServices).iterator();
+//    }
+
     @Override
     public Iterator<Service> serviceIteratorByType(String type, int rating, long lat, long lon) {
         Map<String, Service> allServices = new SepChainHashTable<>(DEFAULT_DIMENTION);
@@ -216,7 +253,8 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
             Iterator<Service> rateIt = servicesByRating.get(rating - 1).iterator();
             while(rateIt.hasNext()){
                 Service s = rateIt.next();
-                if(s.getServiceType().toString().equals(type)){
+                // CORREÇÃO: Usar equalsIgnoreCase
+                if(s.getServiceType().toString().equalsIgnoreCase(type)){
                     allServices.put(s.getName().toUpperCase(), s);
                 }
             }
@@ -288,7 +326,7 @@ public class ServicesCollectionClass implements ServicesCollection, Serializable
     }
 
     private Map<String, Service> getServiceByType(String type) {
-        return switch (type) {
+        return switch (type.toUpperCase()) {
             case "EATING" -> servicesEating;
             case "LODGING" -> servicesLodging;
             case "LEISURE" -> servicesLeisure;

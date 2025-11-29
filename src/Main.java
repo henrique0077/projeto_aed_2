@@ -459,8 +459,8 @@ public class Main {
         int rating = in.nextInt();
         String studentName = in.nextLine().trim();
         try {
-            System.out.printf(Message.RANKED_COMMAND.get(), serviceType, rating);
             Iterator<Service> it = systemApp.getServiceIteratorByType(serviceType, rating, studentName);
+            System.out.printf(Message.RANKED_COMMAND.get(), serviceType, rating);
             while (it.hasNext()) {
                 Service service = it.next();
                 System.out.println(service.getName());
